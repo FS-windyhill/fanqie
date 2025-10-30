@@ -1,5 +1,5 @@
 /* ==================== 全局变量 ==================== */
-// 写死 API
+// 固定 API
 const API_URL = "https://api.siliconflow.cn/v1/chat/completions";
 const API_KEY = "sk-mvhfuozxnqmthysxdmhmxuxbsrcssgzjxlhtrokckcdcrbop";  
 const API_MODEL = "THUDM/GLM-4-9B-0414";
@@ -407,27 +407,52 @@ function resetToDefaultAvatar() {
   speak("已恢复默认头像～", false);
 }
 
+// 在 JS 文件顶部或 applyAppearance 前定义
+function addAlpha(color, alpha) {
+  const r = parseInt(color.slice(1, 3), 16);
+  const g = parseInt(color.slice(3, 5), 16);
+  const b = parseInt(color.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 /* ==================== 外观应用 ==================== */
 function applyAppearance() {
   const body = document.body;
   const container = document.querySelector(".container");
 
+  // --theme-rgb
+  const r = parseInt(themeColor.slice(1, 3), 16);
+  const g = parseInt(themeColor.slice(3, 5), 16);
+  const b = parseInt(themeColor.slice(5, 7), 16);
+  document.documentElement.style.setProperty('--theme-rgb', `${r}, ${g}, ${b}`);
+
+  // --theme-color
+  document.documentElement.style.setProperty('--theme-color', themeColor);
+
+
   if (bgStyle === "custom" && bgImage) {
     body.style.background = `url(${bgImage}) center/cover no-repeat`;
+  } else if (bgStyle === "gradient5") {
+    // 恢复默认 - 使用你的壁纸
+    body.style.background = `url('wallpaper.jpg') center/cover no-repeat fixed`;
   } else {
     const gradients = {
       gradient1: "linear-gradient(to bottom, #a1c4fd, #c2e9fb)",
       gradient2: "linear-gradient(to bottom, #cdb4db, #ffc8dd)",
       gradient3: "linear-gradient(to bottom, #a7f3d0, #d9f7be)",
-      gradient4: "linear-gradient(to bottom, #ffffff, #ffffff)",
+      gradient4: "linear-gradient(to bottom, #ffffff, #ffffff)"
     };
     body.style.background = gradients[bgStyle] || gradients.gradient1;
   }
 
+
   container.style.backgroundColor = containerColor;
   container.style.opacity = containerOpacity / 100;
 
+  // 关键：设置 CSS 变量
   document.documentElement.style.setProperty('--theme-color', themeColor);
+
+
   [timerText, thinking, stats, taskInput].forEach(el => {
     if (el && el.tagName === "INPUT") {
       el.style.borderColor = themeColor;
@@ -442,6 +467,49 @@ function applyAppearance() {
     startBtn.style.color = "#fff";
   }
   if (progressCircle) progressCircle.style.stroke = themeColor;
+
+
+  // ======== 新增：动态设置带主题色的 box-shadow ========
+  const themeShadow = `0 0 12px ${themeColor}90`; // 40 表示透明度 #RRGGBB40
+  const focusShadow = `0 0 0 3px`;
+
+  // 1. personality.warning
+  const warningEls = document.querySelectorAll('.warning');
+  warningEls.forEach(el => {
+    el.style.boxShadow = themeShadow;
+    el.style.borderColor = themeColor;
+  });
+
+  // 2. control-btn（开始、暂停、重置按钮等）
+  const controlBtns = document.querySelectorAll('.control-btn');
+  controlBtns.forEach(btn => {
+    btn.style.boxShadow = themeShadow;
+  });
+
+  // 3. avatar
+  if (avatar) {
+    avatar.style.boxShadow = themeShadow;
+  }
+
+  // 4. digital-timer
+  const digitalTimer = document.querySelector('.digital-timer');
+  if (digitalTimer) {
+    digitalTimer.style.textShadow = themeShadow;
+  }
+
+  // 5. task-input 输入框 focus 状态
+  const styleSheet = document.styleSheets[0];
+  let ruleIndex = -1;
+
+  // ======== 新增：task-input 背景淡色 ========
+  const taskInputEl = document.querySelector('.task-input input');
+  if (taskInputEl) {
+    taskInputEl.style.backgroundColor = addAlpha(themeColor, 0.1);  // 透明度 10%
+    taskInputEl.style.borderColor = themeColor;
+    taskInputEl.style.color = themeColor;
+  }
+  
+
 }
 
 /* ==================== 历史记录 ==================== */
