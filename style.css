@@ -278,6 +278,7 @@ body {
   outline: none;
   text-align: center;
   transition: all 0.3s;
+  box-shadow: 0 0 0 4px rgba(105, 105, 105, 0.3);
 }
 
 .task-input input:focus {

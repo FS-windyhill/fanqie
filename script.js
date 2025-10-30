@@ -416,24 +416,16 @@ function addAlpha(color, alpha) {
 }
 
 /* ==================== 外观应用 ==================== */
+/* ==================== 外观应用 ==================== */
+/* ==================== 外观应用 ==================== */
 function applyAppearance() {
   const body = document.body;
   const container = document.querySelector(".container");
 
-  // --theme-rgb
-  const r = parseInt(themeColor.slice(1, 3), 16);
-  const g = parseInt(themeColor.slice(3, 5), 16);
-  const b = parseInt(themeColor.slice(5, 7), 16);
-  document.documentElement.style.setProperty('--theme-rgb', `${r}, ${g}, ${b}`);
-
-  // --theme-color
-  document.documentElement.style.setProperty('--theme-color', themeColor);
-
-
+  /* ---------- 1. 背景 ---------- */
   if (bgStyle === "custom" && bgImage) {
     body.style.background = `url(${bgImage}) center/cover no-repeat`;
   } else if (bgStyle === "gradient5") {
-    // 恢复默认 - 使用你的壁纸
     body.style.background = `url('wallpaper.jpg') center/cover no-repeat fixed`;
   } else {
     const gradients = {
@@ -445,14 +437,18 @@ function applyAppearance() {
     body.style.background = gradients[bgStyle] || gradients.gradient1;
   }
 
-
+  /* ---------- 2. 容器 ---------- */
   container.style.backgroundColor = containerColor;
   container.style.opacity = containerOpacity / 100;
 
-  // 关键：设置 CSS 变量
+  /* ---------- 3. 主题色 CSS 变量 ---------- */
+  const r = parseInt(themeColor.slice(1, 3), 16);
+  const g = parseInt(themeColor.slice(3, 5), 16);
+  const b = parseInt(themeColor.slice(5, 7), 16);
   document.documentElement.style.setProperty('--theme-color', themeColor);
+  document.documentElement.style.setProperty('--theme-rgb', `${r}, ${g}, ${b}`);
 
-
+  /* ---------- 4. 文字 / 边框颜色 ---------- */
   [timerText, thinking, stats, taskInput].forEach(el => {
     if (el && el.tagName === "INPUT") {
       el.style.borderColor = themeColor;
@@ -468,49 +464,52 @@ function applyAppearance() {
   }
   if (progressCircle) progressCircle.style.stroke = themeColor;
 
+  /* ---------- 5. 统一阴影（全部使用主题色） ---------- */
+  const themeShadow = `0 0 12px ${addAlpha(themeColor, 0.5)}`;   // 普通发光
+  const focusShadow = `0 0 0 3px ${addAlpha(themeColor, 0.25)}`; // focus 光圈
 
-  // ======== 新增：动态设置带主题色的 box-shadow ========
-  const themeShadow = `0 0 12px ${themeColor}90`; // 40 表示透明度 #RRGGBB40
-  const focusShadow = `0 0 0 3px`;
-
-  // 1. personality.warning
-  const warningEls = document.querySelectorAll('.warning');
-  warningEls.forEach(el => {
+  // 1. .warning
+  document.querySelectorAll('.warning').forEach(el => {
     el.style.boxShadow = themeShadow;
     el.style.borderColor = themeColor;
   });
 
-  // 2. control-btn（开始、暂停、重置按钮等）
-  const controlBtns = document.querySelectorAll('.control-btn');
-  controlBtns.forEach(btn => {
+  // 2. .control-btn（开始、暂停、重置）
+  document.querySelectorAll('.control-btn').forEach(btn => {
     btn.style.boxShadow = themeShadow;
   });
 
-  // 3. avatar
-  if (avatar) {
-    avatar.style.boxShadow = themeShadow;
-  }
+  // 3. #avatar
+  if (avatar) avatar.style.boxShadow = themeShadow;
 
-  // 4. digital-timer
+  // 4. .digital-timer
   const digitalTimer = document.querySelector('.digital-timer');
-  if (digitalTimer) {
-    digitalTimer.style.textShadow = themeShadow;
-  }
+  if (digitalTimer) digitalTimer.style.textShadow = themeShadow;   // 如果是文字发光可改成 textShadow
 
-  // 5. task-input 输入框 focus 状态
-  const styleSheet = document.styleSheets[0];
-  let ruleIndex = -1;
-
-  // ======== 新增：task-input 背景淡色 ========
-  const taskInputEl = document.querySelector('.task-input input');
+  /* ---------- 6. task‑name 输入框（淡背景 + focus 光圈） ---------- */
+  const taskInputEl = document.querySelector('#task-name');
   if (taskInputEl) {
-    taskInputEl.style.backgroundColor = addAlpha(themeColor, 0.1);  // 透明度 10%
+    // 默认
+    taskInputEl.style.backgroundColor = addAlpha(themeColor, 0.1);
     taskInputEl.style.borderColor = themeColor;
     taskInputEl.style.color = themeColor;
-  }
-  
+    taskInputEl.style.boxShadow = 'none';
+    taskInputEl.style.outline = 'none';
 
+    // 聚焦
+    taskInputEl.addEventListener('focus', () => {
+      taskInputEl.style.boxShadow = focusShadow;
+      taskInputEl.style.backgroundColor = addAlpha(themeColor, 0.18);
+    });
+    // 失焦
+    taskInputEl.addEventListener('blur', () => {
+      taskInputEl.style.boxShadow = 'none';
+      taskInputEl.style.backgroundColor = addAlpha(themeColor, 0.1);
+    });
+  }
 }
+
+
 
 /* ==================== 历史记录 ==================== */
 function renderHistory() {
