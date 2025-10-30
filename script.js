@@ -129,7 +129,12 @@ function bindEvents() {
   if (closeHistoryBtn) closeHistoryBtn.addEventListener("click", () => historyPanel.style.display = "none");
 
   // 背景上传
-  if (bgSelect) bgSelect.addEventListener("change", () => bgSelect.value === "custom" && bgUpload.click());
+  if (bgSelect) bgSelect.addEventListener("change", () => {
+      if (bgSelect.value === "custom") {
+        bgUpload.click();  // 触发文件选择
+      }
+    });
+    
   if (bgUpload) bgUpload.addEventListener("change", handleBgUpload);
 
   // 透明度滑块
