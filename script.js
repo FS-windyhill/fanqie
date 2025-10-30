@@ -2,7 +2,7 @@
 // 固定 API
 const API_URL = "https://api.siliconflow.cn/v1/chat/completions";
 const API_KEY = "sk-mvhfuozxnqmthysxdmhmxuxbsrcssgzjxlhtrokckcdcrbop";  
-const API_MODEL = "THUDM/GLM-4-9B-0414";
+const API_MODEL = "THUDM/glm-4-9b-chat";
 
 
 let avatar, startBtn, resetBtn, timerText, thinking, progressCircle;
@@ -14,7 +14,7 @@ let changeAvatarBtn, avatarUpload, avatarPreview, mainAvatar, resetAvatarBtn;
 let apiUrlInput, apiKeyInput, apiModelInput, workMinutesInput;
 
 // ==================== 状态 ====================
-let personality = localStorage.getItem("tomatoPersonality") || "你是一个可爱的西红柿学习搭子，陪我专注一个番茄钟，说话温柔又有趣。";
+let personality = localStorage.getItem("tomatoPersonality") || "你是一个可爱的西红柿学习搭子。";
 let currentTask = localStorage.getItem("currentTask") || "";
 let completedTomatoes = parseInt(localStorage.getItem("completedTomatoes") || "0", 10);
 let sessionCount = parseInt(localStorage.getItem("sessionCount") || "0", 10);
@@ -129,13 +129,16 @@ function bindEvents() {
   if (closeHistoryBtn) closeHistoryBtn.addEventListener("click", () => historyPanel.style.display = "none");
 
   // 背景上传
-  if (bgSelect) bgSelect.addEventListener("change", () => {
-      if (bgSelect.value === "custom") {
-        bgUpload.click();  // 触发文件选择
-      }
+  // 改成：按钮直接触发
+  if (document.getElementById("bg-upload-btn")) {
+    document.getElementById("bg-upload-btn").addEventListener("click", () => {
+      bgUpload.click();
     });
-    
-  if (bgUpload) bgUpload.addEventListener("change", handleBgUpload);
+  }
+
+  if (bgUpload) {
+  bgUpload.addEventListener("change", handleBgUpload);
+  } 
 
   // 透明度滑块
   if (containerOpacityInput) containerOpacityInput.addEventListener("input", () => {
@@ -155,8 +158,8 @@ function bindEvents() {
   });
 
   // 头像点击
-  if (avatar) avatar.addEventListener("click", () => speak("我现在准备专心工作和学习，但是我有时候也会分心来找你玩。我现在来找你玩啦！你可以畅所欲言，比如督促我专心完成任务，或者关心我一下，想说什么都行，不过不要长篇大论哦，简单一点。", true));
-
+  if (avatar) avatar.addEventListener("click", () => speak(`我现在准备完成${currentTask}，但是我有时候也会分心来找你。我现在来找你啦！你想说啥就说啥，不必拘束，比如督促我专心完成任务，或者关心我一下，想说什么都行，不过不要长篇大论哦。`, true));
+  
   // 开始 / 暂停
   if (startBtn) {
     startBtn.addEventListener("click", () => {
@@ -326,7 +329,7 @@ function saveSettings() {
     inputText = inputText.substring(0, 1500);
     alert("人设已自动截断至 1500 字！");
   }
-  personality = inputText || "你是一个可爱的西红柿学习搭子。";
+  personality = inputText || "-姓名：\n-性别：\n-身份：\n-性格：\n-对用户的称呼：\n-和用户的关系：";
   workMinutes = parseInt(workMinutesInput.value, 10) || 25;
 
   localStorage.setItem("tomatoPersonality", personality);
@@ -636,15 +639,15 @@ function updateStats() {
 
 /* ==================== AI 对话（带控制台日志） ==================== */
 async function speak(userPrompt, showThinking = true) {
-  // 永远显示“电波传送中...”
-  thinking.textContent = "电波传送中...";
+  // 永远显示“对方正在输入...”
+  thinking.textContent = "对方正在输入...";
   thinking.style.opacity = "1";
   thinking.style.color = "var(--theme-color)";
 
   const elapsedSeconds = totalTime - timeLeft;
   const elapsedMinutes = Math.floor(elapsedSeconds / 60);
   const minutesLeft = Math.ceil(timeLeft / 60);
-  const taskDisplay = currentTask ? `“${currentTask}”` : "学习";
+  const taskDisplay = currentTask ? `“${currentTask}”` : "专注";
 
   const context = `
 用户在进行一个番茄钟任务。
@@ -652,7 +655,7 @@ async function speak(userPrompt, showThinking = true) {
 - 今天已完成 ${completedTomatoes} 个番茄
 - 距离下次休息还有 ${minutesLeft} 分钟
 - 已经专注了 ${elapsedMinutes} 分钟
-请参考“已经专注的时间”“距离下次休息的时间”“当前任务”，根据你人设的性格，回复一下用户。人类说话是不会带括号和动作描写的。你的任务：模仿人类说话，直接输出说话的内容。不要长篇大论哦，简单一点。
+请参考“已经专注的时间”“距离下次休息的时间”“当前任务”，根据你人设的性格回复用户。人类说话是不会带括号和动作描写的。你想说啥就说啥，不必拘束，不过不要长篇大论哦。你的任务：模仿人类说话，直接输出说话的内容。不要长篇大论哦，简单一点。
 `.trim();
 
   const enhancedPersonality = `用户的角色扮演请求：请完全带入以下角色，并以该角色的语气和思考方式说话。以下是人设：${personality}`;
