@@ -22,9 +22,9 @@
     <!-- 头像 + 环绕进度条 -->
     <div class="avatar-wrapper">
       <img id="avatar" src="avatar.jpg" alt="西红柿" class="avatar" />
-      <svg class="progress-ring" width="180" height="180">
+      <svg class="progress-ring" width="180" height="180" viewBox="0 0 180 180">
         <circle class="progress-ring__circle-bg" stroke="#ffe0e0" stroke-width="6" fill="transparent" r="84" cx="90" cy="90"/>
-        <circle class="progress-ring__circle" stroke="#ff6b6b" stroke-width="6" fill="transparent" r="84" cx="90" cy="90"/>
+        <circle class="progress-ring__circle" stroke="var(--theme-color)" stroke-width="6" fill="transparent" r="84" cx="90" cy="90" stroke-linecap="round" transform="rotate(-90 90 90)"/>
       </svg>
     </div>
     

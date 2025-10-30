@@ -686,17 +686,14 @@ element.style {
   transition: all 0.3s ease;
 }
 
-
-/* ==================== 手机端优化：开始 ==================== */
-
-/* 外观面板：小屏幕时自动居中 */
+/* ==================== 手机端优化 ==================== */
 @media (max-width: 480px) {
   #appearance-panel,
   #settings-panel,
   #history-panel {
     position: fixed !important;
-    right: 50% !important;
     left: 50% !important;
+    right: auto !important;
     transform: translateX(-50%) !important;
     width: 90% !important;
     max-width: 320px !important;
@@ -707,7 +704,6 @@ element.style {
     box-sizing: border-box !important;
   }
 
-  /* 按钮在小屏幕上垂直排列 */
   .control-group {
     flex-direction: column !important;
     align-items: center !important;
@@ -718,14 +714,12 @@ element.style {
     margin: 6px 0 !important;
   }
 
-  /* 输入框更紧凑 */
   .setting-item input,
   .setting-item select {
     font-size: 14px !important;
     padding: 6px !important;
   }
 
-  /* 字体缩小 */
   body {
     font-size: 14px !important;
   }
@@ -739,23 +733,15 @@ element.style {
     height: 140px !important;
   }
 
+  /* 关键：只改容器大小，不动 SVG 内部 */
   .progress-ring {
     width: 140px !important;
     height: 140px !important;
   }
 
   .avatar {
-  width: 110px !important;
-  height: 110px !important;
+    width: 110px !important;
+    height: 110px !important;
   }
 
-  .progress-ring__circle-bg,
-  .progress-ring__circle {
-    r: 64 !important;
-    cx: 70 !important;
-    cy: 70 !important;
-  }
 }
-
-
-
