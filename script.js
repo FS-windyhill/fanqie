@@ -300,10 +300,10 @@ function bindEvents() {
   // API 面板
   if (apiBtn) apiBtn.addEventListener('click', openApiPanel);
   if (apiClose) apiClose.addEventListener('click', () => apiPanel.style.display = 'none');
-  if (apiSave) apiSave.addEventListener('click', saveApiConfig);
-
-  // 【新增】连接按钮
-  if (apiTestBtn) apiTestBtn.addEventListener('click', testApiConnectionManually);
+  const apiSaveTestBtn = document.getElementById('api-save-test');
+  if (apiSaveTestBtn) {
+    apiSaveTestBtn.addEventListener('click', saveAndTestApiConfig);
+  }
 
   // 在 bindEvents() 中添加
   const apiDefaultBtn = document.getElementById('api-default');
@@ -725,6 +725,9 @@ function openApiPanel() {
     apiStatus.className = 'status-default';
   }
 
+  // 打开时自动测一次（不影响保存逻辑）
+  testApiConnectionManually();
+
 }
 
 
@@ -878,6 +881,37 @@ async function testApiConnectionManually() {
     console.error("API 测试失败：", err);
   }
 }
+
+/** 保存配置 → 立即测试 → 保持面板打开 */
+async function saveAndTestApiConfig() {
+  // 1. 先保存（和原来的 saveApiConfig 完全一样）
+  const url = apiUrlInput.value.trim();
+  const key = apiKeyInput.value.trim();
+  const model = apiModelInput.value.trim();
+  const provider = apiProviderSelect.value;
+
+  if (url && key && model) {
+    localStorage.setItem('customApiUrl', url);
+    localStorage.setItem('customApiKey', key);
+    localStorage.setItem('customApiModel', model);
+    localStorage.setItem('apiProvider', provider);
+    speak("我回来啦！", false);
+  } else {
+    localStorage.removeItem('customApiUrl');
+    localStorage.removeItem('customApiKey');
+    localStorage.removeItem('customApiModel');
+    localStorage.setItem('apiProvider', 'openai');
+    speak("我回来啦。", false);
+  }
+
+  // 2. **不关闭面板**（关键！）
+  // apiPanel.style.display = 'none';   <-- 删除这行
+
+  // 3. 立即测试（复用已有的手动测试函数）
+  await testApiConnectionManually();
+}
+
+
 
 /* ==================== 计时器控制 ==================== */
 function startTimer() {
