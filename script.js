@@ -76,24 +76,33 @@ function getApiConfig() {
 }
 
 
-/* ==================== 测试 API 连接（带 √ 标记）================== */
-async function testApiConnection() {
-  const config = getApiConfig();
+/* ==================== 测试自定义 API ==================== */
+async function testApiConnectionManually() {
   const statusEl = apiStatus;
   if (!statusEl) return;
 
-  statusEl.textContent = "测试中...";
-  statusEl.style.color = "#999";
+  const url = apiUrlInput.value.trim();
+  const key = apiKeyInput.value.trim();
+  const model = apiModelInput.value.trim();
+
+  if (!url || !key || !model) {
+    statusEl.innerHTML = '请完整填写三项<br>或点【使用默认】';
+    statusEl.className = 'status-failure';
+    return;
+  }
+
+  statusEl.textContent = '连接中…';
+  statusEl.className = 'status-pending';
 
   try {
-    const response = await fetch(config.url, {
+    const response = await fetch(url, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${config.key}`,
+        "Authorization": `Bearer ${key}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: config.model,
+        model: model,
         messages: [{ role: "user", content: "ping" }],
         max_tokens: 1
       })
@@ -101,16 +110,50 @@ async function testApiConnection() {
 
     if (response.ok) {
       statusEl.innerHTML = '√ 已连接';
-      statusEl.style.color = '#4caf50';
-      statusEl.title = config.isCustom ? '自定义 API' : '默认 API';
+      statusEl.className = 'status-success';
     } else {
-      throw new Error("HTTP " + response.status);
+      throw new Error(`HTTP ${response.status}`);
     }
   } catch (err) {
     statusEl.innerHTML = '× 连接失败';
-    statusEl.style.color = '#f44336';
-    statusEl.title = '点击 API 设置重新配置';
+    statusEl.className = 'status-failure';
     console.error("API 测试失败：", err);
+  }
+}
+
+/* ==================== 测试默认 API ==================== */
+async function testDefaultApi() {
+  const statusEl = apiStatus;
+  if (!statusEl) return;
+
+  statusEl.textContent = '连接中…';
+  statusEl.className = 'status-pending';
+
+  try {
+    const response = await fetch(DEFAULT_API.url, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${DEFAULT_API.key}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: DEFAULT_API.model,
+        messages: [{ role: "user", content: "ping" }],
+        max_tokens: 1
+      })
+    });
+
+    if (response.ok) {
+      statusEl.innerHTML = '√ 已连接';
+      statusEl.className = 'status-success';
+      statusEl.title = '默认 API 连接成功';
+    } else {
+      throw new Error(`HTTP ${response.status}`);
+    }
+  } catch (err) {
+    statusEl.innerHTML = '× 连接失败';
+    statusEl.className = 'status-failure';
+    console.error("默认 API 测试失败：", err);
   }
 }
 
@@ -128,7 +171,6 @@ window.onload = function() {
   }
 
   // 获取 DOM
-  // ...（保持你原来的 DOM 获取逻辑不变）
   avatar = document.getElementById("avatar");
   startBtn = document.getElementById("start-btn");
   resetBtn = document.getElementById("reset-btn");
@@ -192,8 +234,6 @@ window.onload = function() {
   if (apiKeyInput) apiKeyInput.value = saved.key || '';
   if (apiModelInput) apiModelInput.value = saved.model || DEFAULT_API.model;
 
-  // 自动测试一次连接
-  setTimeout(testApiConnection, 500);
 };
 
 /* ==================== 绑定所有事件 ==================== */
@@ -264,18 +304,20 @@ function bindEvents() {
   const apiDefaultBtn = document.getElementById('api-default');
   if (apiDefaultBtn) {
     apiDefaultBtn.addEventListener('click', () => {
-      if (confirm('确定清空自定义配置，恢复默认 API？')) {
+      if (confirm('确定恢复默认 API 配置？')) {
+        // 清空存储和输入框
         localStorage.removeItem('customApiUrl');
         localStorage.removeItem('customApiKey');
         localStorage.removeItem('customApiModel');
-        
-        // 清空输入框
+
         if (apiUrlInput) apiUrlInput.value = DEFAULT_API.url;
         if (apiKeyInput) apiKeyInput.value = '';
         if (apiModelInput) apiModelInput.value = '';
-        
-        speak('我回来啦！', false);
-        testApiConnectionManually();
+
+        speak('我回来啦。', false);
+
+        // 直接测试默认 API
+        testDefaultApi();
       }
     });
   }
@@ -708,6 +750,41 @@ function saveApiConfig() {
   }
 
   apiPanel.style.display = 'none';
+}
+
+async function testDefaultApi() {
+  const statusEl = apiStatus;
+  if (!statusEl) return;
+
+  statusEl.textContent = '连接中…';
+  statusEl.className = 'if (apiStatus)';
+
+  try {
+    const response = await fetch(DEFAULT_API.url, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${DEFAULT_API.key}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: DEFAULT_API.model,
+        messages: [{ role: "user", content: "ping" }],
+        max_tokens: 1
+      })
+    });
+
+    if (response.ok) {
+      statusEl.innerHTML = '√ 已连接';
+      statusEl.className = 'status-success';
+      statusEl.title = '默认 API 连接成功';
+    } else {
+      throw new Error(`HTTP ${response.status}`);
+    }
+  } catch (err) {
+    statusEl.innerHTML = '× 连接失败';
+    statusEl.className = 'status-failure';
+    console.error("默认 API 测试失败：", err);
+  }
 }
 
 // 【关键】独立的连接测试函数
