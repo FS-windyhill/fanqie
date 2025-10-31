@@ -686,8 +686,54 @@ element.style {
   transition: all 0.3s ease;
 }
 
+/* ==================== API 面板按钮区 ==================== */
+#api-panel .api-panel-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+#api-panel .api-panel-footer .btn-group {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+/* 状态文字（统一） */
+#api-panel #api-status {
+  font-size: 0.9em;
+  font-weight: bold;
+  text-align: center;
+  margin: 0;
+  transition: color 0.3s ease;
+}
+
+/* 不同状态用类控制 */
+.status-pending  { color: #ff9800; } /* 连接中… */
+.status-success  { color: #4caf50; } /* √ 已连接 */
+.status-failure  { color: #f44336; } /* × 连接失败 */
+.status-default  { color: #999; }    /* 未测试 */
+
+/* 手机端：按钮垂直 + 居中 */
+@media (max-width: 480px) {
+  #api-panel .api-panel-footer .btn-group {
+    flex-direction: column;
+    width: 100%;
+    align-items: center;     /* 水平居中 */
+    gap: 8px;                /* 可选：按钮间距更清晰 */
+  }
+  #api-panel .api-panel-footer button {
+    width: 100%;
+    max-width: 200px;
+    margin: 0 auto;          /* 保险起见，双重居中 */
+  }
+}
+
 /* ==================== 手机端优化 ==================== */
 @media (max-width: 480px) {
+  /* 已有三个面板的优化 */
   #appearance-panel,
   #settings-panel,
   #history-panel {
@@ -704,6 +750,51 @@ element.style {
     box-sizing: border-box !important;
   }
 
+  /* 【新增】API 面板手机端优化 */
+  #api-panel {
+    position: fixed !important;
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    width: 90% !important;
+    max-width: 320px !important;
+    max-height: 80vh !important;
+    overflow-y: auto !important;
+    top: 10vh !important;
+    padding: 16px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* API 面板内部输入框优化 */
+  #api-panel .setting-item input,
+  #api-panel .setting-item textarea {
+    font-size: 14px !important;
+    padding: 6px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* API 面板按钮组：垂直排列，居中 */
+  #api-panel .api-panel-footer {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin-top: 12px !important;
+  }
+
+  #api-panel .api-panel-footer button {
+    width: 160px !important;
+    margin: 4px 0 !important;
+  }
+
+  /* 状态提示文字在手机上也换行不挤 */
+  #api-panel #api-status {
+    margin-left: 0 !important;
+    margin-top: 4px !important;
+    font-size: 0.85em !important;
+  }
+
+  /* 其余你原来的手机优化保持不变 */
   .control-group {
     flex-direction: column !important;
     align-items: center !important;
@@ -733,7 +824,7 @@ element.style {
     height: 140px !important;
   }
 
-  /* 关键：只改容器大小，不动 SVG 内部 */
+  /* 关键：只改容器大小，不动 SVG 内部 */ 
   .progress-ring {
     width: 140px !important;
     height: 140px !important;
@@ -743,5 +834,4 @@ element.style {
     width: 110px !important;
     height: 110px !important;
   }
-
 }

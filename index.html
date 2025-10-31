@@ -13,6 +13,7 @@
     <div class="header">
       <h1>拍拍西红柿</h1>
       <div>
+        <button id="api-btn" class="icon-btn">⚡</button>
         <button id="history-btn" class="icon-btn">📜</button>
         <button id="appearance-btn" class="icon-btn">🎨</button>
         <button id="settings-btn" class="icon-btn">⚙</button>
@@ -153,6 +154,36 @@
         <button id="close-history">关闭</button>
       </div>
     </div>
+
+    <!-- ==================== API配置面板 ==================== -->
+    <div id="api-panel" class="settings-panel" style="display:none; right: 55px;">
+      <h3>API 配置</h3>
+      <div class="setting-item">
+        <label>API 地址：</label>
+        <input type="url" id="api-url" placeholder="https://api.siliconflow.cn/v1/chat/completions" style="width:100%;padding:6px;">
+      </div>
+      <div class="setting-item">
+        <label>API 密钥：</label>
+        <input type="password" id="api-key" placeholder="sk-..." style="width:100%;padding:6px;">
+      </div>
+      <div class="setting-item">
+        <label>模型名称：</label>
+        <input type="text" id="api-model" placeholder="deepseek-ai/DeepSeek-V3.2-Exp" style="width:100%;padding:6px;">
+      </div>
+
+      <div class="api-panel-footer">
+        <div class="btn-group">
+          <button id="api-save">保存</button>
+          <button id="api-test">连接</button>
+          <button id="api-default">使用默认</button>
+          <button id="api-close">关闭</button>
+        </div>
+        <span id="api-status">未测试</span>
+      </div>
+      
+    </div>
+
+
   </div>
 
   <script src="script.js"></script>

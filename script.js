@@ -1,19 +1,31 @@
 /* ==================== 全局变量 ==================== */
-// 固定 API
-const API_URL = "https://api.siliconflow.cn/v1/chat/completions";
-const API_KEY = "sk-mvhfuozxnqmthysxdmhmxuxbsrcssgzjxlhtrokckcdcrbop";  
-const API_MODEL = "THUDM/glm-4-9b-chat";
+// 默认 API（开箱即食）
+const DEFAULT_API = {
+  url: "https://api.siliconflow.cn/v1/chat/completions",
+  key: "sk-mvhfuozxnqmthysxdmhmxuxbsrcssgzjxlhtrokckcdcrbop",
+  model: "THUDM/glm-4-9b-chat"
+};
 
-
+// DOM 元素
 let avatar, startBtn, resetBtn, timerText, thinking, progressCircle;
 let settingsBtn, settingsPanel, appearanceBtn, appearancePanel;
 let personalityInput, saveBtn, closeBtn, appearanceSave, appearanceClose;
 let taskInput, stats, historyBtn, historyPanel, historyList, clearHistoryBtn, closeHistoryBtn;
 let bgSelect, bgUpload, containerBgColor, containerOpacityInput, opacityValue, themeColorInput;
 let changeAvatarBtn, avatarUpload, avatarPreview, mainAvatar, resetAvatarBtn;
-let apiUrlInput, apiKeyInput, apiModelInput, workMinutesInput;
+let workMinutesInput;
 
-// ==================== 状态 ====================
+// API 面板相关
+const apiBtn = document.getElementById('api-btn');
+const apiPanel = document.getElementById('api-panel');
+const apiClose = document.getElementById('api-close');
+const apiSave = document.getElementById('api-save');
+const apiUrlInput = document.getElementById('api-url');
+const apiKeyInput = document.getElementById('api-key');
+const apiModelInput = document.getElementById('api-model');
+const apiStatus = document.getElementById('api-status'); // 你 HTML 里要加这个 <span id="api-status"></span>
+
+/* ==================== 状态 ==================== */
 let personality = localStorage.getItem("tomatoPersonality") || "你是一个可爱的西红柿学习搭子。";
 let currentTask = localStorage.getItem("currentTask") || "";
 let completedTomatoes = parseInt(localStorage.getItem("completedTomatoes") || "0", 10);
@@ -32,17 +44,81 @@ let timer = null;
 let timeLeft = workMinutes * 60;
 let totalTime = workMinutes * 60;
 let isRunning = false;
-let expectedEndTime = null; // <-- 新增此行
-
+let expectedEndTime = null;
 
 const CIRCUMFERENCE = 527;
 
+/* ==================== 获取当前 API 配置 ==================== */
+function getApiConfig() {
+  const customUrl = localStorage.getItem('customApiUrl')?.trim();
+  const customKey = localStorage.getItem('customApiKey')?.trim();
+  const customModel = localStorage.getItem('customApiModel')?.trim();
+
+  // 【关键】三者必须同时存在才生效！
+  const isFullCustom = customUrl && customKey && customModel;
+
+  if (isFullCustom) {
+    return {
+      url: customUrl,
+      key: customKey,
+      model: customModel,
+      isCustom: true
+    };
+  } else {
+    // 半填或未填 → 强制走默认（免费）
+    return {
+      url: DEFAULT_API.url,
+      key: DEFAULT_API.key,
+      model: DEFAULT_API.model,
+      isCustom: false
+    };
+  }
+}
+
+
+/* ==================== 测试 API 连接（带 √ 标记）================== */
+async function testApiConnection() {
+  const config = getApiConfig();
+  const statusEl = apiStatus;
+  if (!statusEl) return;
+
+  statusEl.textContent = "测试中...";
+  statusEl.style.color = "#999";
+
+  try {
+    const response = await fetch(config.url, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${config.key}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: config.model,
+        messages: [{ role: "user", content: "ping" }],
+        max_tokens: 1
+      })
+    });
+
+    if (response.ok) {
+      statusEl.innerHTML = '√ 已连接';
+      statusEl.style.color = '#4caf50';
+      statusEl.title = config.isCustom ? '自定义 API' : '默认 API';
+    } else {
+      throw new Error("HTTP " + response.status);
+    }
+  } catch (err) {
+    statusEl.innerHTML = '× 连接失败';
+    statusEl.style.color = '#f44336';
+    statusEl.title = '点击 API 设置重新配置';
+    console.error("API 测试失败：", err);
+  }
+}
+
 /* ==================== 页面加载完成后初始化 ==================== */
 window.onload = function() {
-  // ========== 每天自动清零今日番茄数 ==========
+  // 每天自动清零
   const today = new Date().toLocaleDateString('zh-CN');
   const lastDate = localStorage.getItem("lastTomatoDate");
-
   if (lastDate !== today) {
     localStorage.setItem("completedTomatoes", "0");
     completedTomatoes = 0;
@@ -51,7 +127,8 @@ window.onload = function() {
     completedTomatoes = parseInt(localStorage.getItem("completedTomatoes") || "0", 10);
   }
 
-  // 获取 DOM 元素（确保存在）
+  // 获取 DOM
+  // ...（保持你原来的 DOM 获取逻辑不变）
   avatar = document.getElementById("avatar");
   startBtn = document.getElementById("start-btn");
   resetBtn = document.getElementById("reset-btn");
@@ -69,49 +146,54 @@ window.onload = function() {
   appearanceClose = document.getElementById("appearance-close");
   taskInput = document.getElementById("task-name");
   stats = document.getElementById("stats");
-
   historyBtn = document.getElementById("history-btn");
   historyPanel = document.getElementById("history-panel");
   historyList = document.getElementById("history-list");
   clearHistoryBtn = document.getElementById("clear-history");
   closeHistoryBtn = document.getElementById("close-history");
-
   bgSelect = document.getElementById("bg-select");
   bgUpload = document.getElementById("bg-upload");
   containerBgColor = document.getElementById("container-bg-color");
   containerOpacityInput = document.getElementById("container-opacity");
   opacityValue = document.getElementById("opacity-value");
   themeColorInput = document.getElementById("theme-color");
-
   changeAvatarBtn = document.getElementById("change-avatar-btn");
   avatarUpload = document.getElementById("avatar-upload");
   avatarPreview = document.querySelector("#avatar-preview img");
   mainAvatar = document.getElementById("avatar");
-  resetAvatarBtn =  document.getElementById("reset-avatar-btn");
-
+  resetAvatarBtn = document.getElementById("reset-avatar-btn");
   workMinutesInput = document.getElementById("work-minutes");
 
-  // 初始化输入框
+  // 初始化
   taskInput.value = currentTask;
   workMinutesInput.value = workMinutes;
 
-  // 头像初始化
   const savedAvatar = localStorage.getItem("customAvatar");
   if (savedAvatar && mainAvatar && avatarPreview) {
     mainAvatar.src = savedAvatar;
     avatarPreview.src = savedAvatar;
   }
 
-  // 应用外观
   applyAppearance();
-
-  // 初始化显示
   updateTimer();
   updateStats();
   thinking.textContent = "戳我一下试试～";
 
   // 绑定事件
   bindEvents();
+
+  // 【关键】加载时填充 API 输入框 + 测试连接
+  const saved = {
+    url: localStorage.getItem('customApiUrl'),
+    key: localStorage.getItem('customApiKey'),
+    model: localStorage.getItem('customApiModel')
+  };
+  if (apiUrlInput) apiUrlInput.value = saved.url || DEFAULT_API.url;
+  if (apiKeyInput) apiKeyInput.value = saved.key || '';
+  if (apiModelInput) apiModelInput.value = saved.model || DEFAULT_API.model;
+
+  // 自动测试一次连接
+  setTimeout(testApiConnection, 500);
 };
 
 /* ==================== 绑定所有事件 ==================== */
@@ -129,7 +211,6 @@ function bindEvents() {
   if (closeHistoryBtn) closeHistoryBtn.addEventListener("click", () => historyPanel.style.display = "none");
 
   // 背景上传
-  // 改成：按钮直接触发
   if (document.getElementById("bg-upload-btn")) {
     document.getElementById("bg-upload-btn").addEventListener("click", () => {
       bgUpload.click();
@@ -167,6 +248,34 @@ function bindEvents() {
         pauseTimer();
       } else {
         startTimer();
+      }
+    });
+  }
+
+  // API 面板
+  if (apiBtn) apiBtn.addEventListener('click', openApiPanel);
+  if (apiClose) apiClose.addEventListener('click', () => apiPanel.style.display = 'none');
+  if (apiSave) apiSave.addEventListener('click', saveApiConfig);
+
+  // 【新增】连接按钮
+  if (apiTestBtn) apiTestBtn.addEventListener('click', testApiConnectionManually);
+
+  // 在 bindEvents() 中添加
+  const apiDefaultBtn = document.getElementById('api-default');
+  if (apiDefaultBtn) {
+    apiDefaultBtn.addEventListener('click', () => {
+      if (confirm('确定清空自定义配置，恢复默认 API？')) {
+        localStorage.removeItem('customApiUrl');
+        localStorage.removeItem('customApiKey');
+        localStorage.removeItem('customApiModel');
+        
+        // 清空输入框
+        if (apiUrlInput) apiUrlInput.value = DEFAULT_API.url;
+        if (apiKeyInput) apiKeyInput.value = '';
+        if (apiModelInput) apiModelInput.value = '';
+        
+        speak('我回来啦！', false);
+        testApiConnectionManually();
       }
     });
   }
@@ -424,8 +533,6 @@ function addAlpha(color, alpha) {
 }
 
 /* ==================== 外观应用 ==================== */
-/* ==================== 外观应用 ==================== */
-/* ==================== 外观应用 ==================== */
 function applyAppearance() {
   const body = document.body;
   const container = document.querySelector(".container");
@@ -550,6 +657,105 @@ function renderHistory() {
   historyList.innerHTML = html;
 }
 
+/* ==================== API 面板控制（新增【连接】按钮）=================== */
+const apiTestBtn = document.getElementById('api-test'); // 新增
+
+function openApiPanel() {
+  apiPanel.style.display = 'block';
+
+  // 优先读取用户保存的配置
+  const savedUrl = localStorage.getItem('customApiUrl');
+  const savedKey = localStorage.getItem('customApiKey');
+  const savedModel = localStorage.getItem('customApiModel');
+
+  // URL：如果用户没填，显示默认 URL（可改）
+  if (apiUrlInput) {
+    apiUrlInput.value = savedUrl || DEFAULT_API.url;
+  }
+
+  if (apiKeyInput) {
+    apiKeyInput.value = savedKey || '';  // 不回填默认密钥！
+  }
+
+  if (apiModelInput) {
+    apiModelInput.value = savedModel || '';  // 不回填默认模型
+  }
+
+  // 重置状态
+  if (apiStatus) {
+    apiStatus.textContent = '未测试';
+    apiStatus.className = 'status-default';
+  }
+}
+
+function saveApiConfig() {
+  const url = apiUrlInput.value.trim();
+  const key = apiKeyInput.value.trim();
+  const model = apiModelInput.value.trim();
+
+  // 【关键】三者必须齐全才保存
+  if (url && key && model) {
+    localStorage.setItem('customApiUrl', url);
+    localStorage.setItem('customApiKey', key);
+    localStorage.setItem('customApiModel', model);
+    speak("我回来啦！", false);
+  } else {
+    // 清空或不保存
+    localStorage.removeItem('customApiUrl');
+    localStorage.removeItem('customApiKey');
+    localStorage.removeItem('customApiModel');
+    speak("请完整填写三项才能保存", false);
+  }
+
+  apiPanel.style.display = 'none';
+}
+
+// 【关键】独立的连接测试函数
+async function testApiConnectionManually() {
+  const statusEl = apiStatus;
+  if (!statusEl) return;
+
+  const inputUrl = apiUrlInput.value.trim();
+  const inputKey = apiKeyInput.value.trim();
+  const inputModel = apiModelInput.value.trim();
+
+  // 【关键】如果不是三件套齐全 → 提示 + 测试默认
+  if (!inputUrl || !inputKey || !inputModel) {
+    statusEl.innerHTML = '请完整填写三项<br>或点【使用默认】';
+    statusEl.className = 'status-failure';
+    return;
+  }
+
+  statusEl.textContent = '连接中…';
+  statusEl.className = 'status-pending';
+
+  try {
+    const response = await fetch(inputUrl, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${inputKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: inputModel,
+        messages: [{ role: "user", content: "ping" }],
+        max_tokens: 1
+      })
+    });
+
+    if (response.ok) {
+      statusEl.innerHTML = '√ 已连接';
+      statusEl.className = 'status-success';
+    } else {
+      throw new Error(`HTTP ${response.status}`);
+    }
+  } catch (err) {
+    statusEl.innerHTML = '× 连接失败';
+    statusEl.className = 'status-failure';
+    console.error("API 测试失败：", err);
+  }
+}
+
 /* ==================== 计时器控制 ==================== */
 function startTimer() {
   if (isRunning) return;
@@ -637,7 +843,7 @@ function updateStats() {
   stats.textContent = `今日已完成 ${completedTomatoes} 个番茄`; 
 }
 
-/* ==================== AI 对话（带控制台日志） ==================== */
+/* ==================== AI 对话（使用动态 API + 控制台日志）================== */
 async function speak(userPrompt, showThinking = true) {
   // 永远显示“对方正在输入...”
   thinking.textContent = "对方正在输入...";
@@ -660,17 +866,21 @@ async function speak(userPrompt, showThinking = true) {
 
   const enhancedPersonality = `用户的角色扮演请求：请完全带入以下角色，并以该角色的语气和思考方式说话。以下是人设：${personality}`;
   const fullPrompt = enhancedPersonality + "\n" + context + "\n\n用户: " + userPrompt;
+
+  // 【保留你原来的控制台日志！】
   console.log("【发送给 AI 的完整 Prompt】\n", fullPrompt);
 
+  const config = getApiConfig();
+
   try {
-    const response = await fetch(API_URL, {
+    const response = await fetch(config.url, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${API_KEY}`,
+        "Authorization": `Bearer ${config.key}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: API_MODEL,
+        model: config.model,
         messages: [
           { role: "system", content: personality + "\n" + context },
           { role: "user", content: userPrompt }
@@ -679,12 +889,24 @@ async function speak(userPrompt, showThinking = true) {
         max_tokens: 60
       })
     });
-    if (!response.ok) throw new Error("API error");
+
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(`HTTP ${response.status}: ${err}`);
+    }
+
     const data = await response.json();
     const reply = data.choices[0].message.content.trim();
     thinking.textContent = reply;
+
   } catch (err) {
     thinking.textContent = "网络错误，戳我重试~";
     console.error("API 错误：", err);
+
+    // 连接失败也更新状态
+    if (apiStatus) {
+      apiStatus.innerHTML = '× 连接失败';
+      apiStatus.style.color = '#f44336';
+    }
   }
 }
