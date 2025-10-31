@@ -158,8 +158,17 @@
     <!-- ==================== API配置面板 ==================== -->
     <div id="api-panel" class="settings-panel" style="display:none; right: 55px;">
       <h3>API 配置</h3>
+      <div class="api-field">
+        <label for="api-provider">模型提供商：</label>
+        <select id="api-provider">
+          <option value="openai">OpenAI 兼容（如 SiliconFlow）</option>
+          <option value="claude">Claude (Anthropic)</option>
+          <option value="gemini">Gemini (Google)</option>
+          <div id="api-hint" class="api-hint"></div>
+        </select>
+      </div>
       <div class="setting-item">
-        <label>API 地址：</label>
+        <label>API 地址：<br>记得在地址最后加（可复制）：<br>/v1/chat/completions</label>
         <input type="url" id="api-url" placeholder="https://api.siliconflow.cn/v1/chat/completions" style="width:100%;padding:6px;">
       </div>
       <div class="setting-item">
@@ -173,8 +182,8 @@
 
       <div class="api-panel-footer">
         <div class="btn-group">
+          <button id="api-test">测试</button>
           <button id="api-save">保存</button>
-          <button id="api-test">连接</button>
           <button id="api-default">使用默认</button>
           <button id="api-close">关闭</button>
         </div>

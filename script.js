@@ -14,6 +14,7 @@ let taskInput, stats, historyBtn, historyPanel, historyList, clearHistoryBtn, cl
 let bgSelect, bgUpload, containerBgColor, containerOpacityInput, opacityValue, themeColorInput;
 let changeAvatarBtn, avatarUpload, avatarPreview, mainAvatar, resetAvatarBtn;
 let workMinutesInput;
+let apiProviderSelect;
 
 // API 面板相关
 const apiBtn = document.getElementById('api-btn');
@@ -50,23 +51,26 @@ const CIRCUMFERENCE = 527;
 
 /* ==================== 获取当前 API 配置 ==================== */
 function getApiConfig() {
+  const provider = localStorage.getItem('apiProvider') || 'openai';
+
   const customUrl = localStorage.getItem('customApiUrl')?.trim();
   const customKey = localStorage.getItem('customApiKey')?.trim();
   const customModel = localStorage.getItem('customApiModel')?.trim();
 
-  // 【关键】三者必须同时存在才生效！
   const isFullCustom = customUrl && customKey && customModel;
 
   if (isFullCustom) {
     return {
+      provider,
       url: customUrl,
       key: customKey,
       model: customModel,
       isCustom: true
     };
   } else {
-    // 半填或未填 → 强制走默认（免费）
+    // 使用默认（OpenAI 兼容）
     return {
+      provider: 'openai',
       url: DEFAULT_API.url,
       key: DEFAULT_API.key,
       model: DEFAULT_API.model,
@@ -205,6 +209,7 @@ window.onload = function() {
   mainAvatar = document.getElementById("avatar");
   resetAvatarBtn = document.getElementById("reset-avatar-btn");
   workMinutesInput = document.getElementById("work-minutes");
+  apiProviderSelect = document.getElementById('api-provider');
 
   // 初始化
   taskInput.value = currentTask;
@@ -705,48 +710,43 @@ const apiTestBtn = document.getElementById('api-test'); // 新增
 function openApiPanel() {
   apiPanel.style.display = 'block';
 
-  // 优先读取用户保存的配置
+  const savedProvider = localStorage.getItem('apiProvider') || 'openai';
   const savedUrl = localStorage.getItem('customApiUrl');
   const savedKey = localStorage.getItem('customApiKey');
   const savedModel = localStorage.getItem('customApiModel');
 
-  // URL：如果用户没填，显示默认 URL（可改）
-  if (apiUrlInput) {
-    apiUrlInput.value = savedUrl || DEFAULT_API.url;
-  }
+  if (apiProviderSelect) apiProviderSelect.value = savedProvider;
+  if (apiUrlInput) apiUrlInput.value = savedUrl || (savedProvider === 'openai' ? DEFAULT_API.url : '');
+  if (apiKeyInput) apiKeyInput.value = savedKey || '';
+  if (apiModelInput) apiModelInput.value = savedModel || '';
 
-  if (apiKeyInput) {
-    apiKeyInput.value = savedKey || '';  // 不回填默认密钥！
-  }
-
-  if (apiModelInput) {
-    apiModelInput.value = savedModel || '';  // 不回填默认模型
-  }
-
-  // 重置状态
   if (apiStatus) {
     apiStatus.textContent = '未测试';
     apiStatus.className = 'status-default';
   }
+
 }
 
+
+// 保存API配置
 function saveApiConfig() {
   const url = apiUrlInput.value.trim();
   const key = apiKeyInput.value.trim();
   const model = apiModelInput.value.trim();
+  const provider = apiProviderSelect.value;
 
-  // 【关键】三者必须齐全才保存
   if (url && key && model) {
     localStorage.setItem('customApiUrl', url);
     localStorage.setItem('customApiKey', key);
     localStorage.setItem('customApiModel', model);
+    localStorage.setItem('apiProvider', provider);
     speak("我回来啦！", false);
   } else {
-    // 清空或不保存
     localStorage.removeItem('customApiUrl');
     localStorage.removeItem('customApiKey');
     localStorage.removeItem('customApiModel');
-    speak("请完整填写三项才能保存", false);
+    localStorage.setItem('apiProvider', 'openai'); // 默认
+    speak("我回来啦。", false);
   }
 
   apiPanel.style.display = 'none';
@@ -795,8 +795,8 @@ async function testApiConnectionManually() {
   const inputUrl = apiUrlInput.value.trim();
   const inputKey = apiKeyInput.value.trim();
   const inputModel = apiModelInput.value.trim();
+  const provider = apiProviderSelect.value;  // 获取提供商
 
-  // 【关键】如果不是三件套齐全 → 提示 + 测试默认
   if (!inputUrl || !inputKey || !inputModel) {
     statusEl.innerHTML = '请完整填写三项<br>或点【使用默认】';
     statusEl.className = 'status-failure';
@@ -807,18 +807,64 @@ async function testApiConnectionManually() {
   statusEl.className = 'status-pending';
 
   try {
-    const response = await fetch(inputUrl, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${inputKey}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: inputModel,
-        messages: [{ role: "user", content: "ping" }],
-        max_tokens: 1
-      })
-    });
+    let response;
+
+    if (provider === 'gemini') {
+      // ===== Gemini 测试请求 =====
+      const modelUrl = inputUrl.includes(':generateContent') 
+        ? inputUrl 
+        : `${inputUrl}?key=${inputKey}`;  // 如果 URL 不含 key，自动添加（备用）
+
+      response = await fetch(modelUrl, {
+        method: "POST",
+        headers: {
+          "x-goog-api-key": inputKey,  // 【关键】Gemini 用这个头！
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [{ text: "ping" }]  // Gemini 风格：parts.text
+            }
+          ],
+          generationConfig: {
+            maxOutputTokens: 1,
+            temperature: 0.9
+          }
+        })
+      });
+
+    } else if (provider === 'claude') {
+      // ===== Claude 测试 =====
+      response = await fetch(inputUrl, {
+        method: "POST",
+        headers: {
+          "x-api-key": inputKey,  // Claude 用这个
+          "anthropic-version": "2023-06-01",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: inputModel,
+          max_tokens: 1,
+          messages: [{ role: "user", content: "ping" }]
+        })
+      });
+
+    } else {
+      // ===== OpenAI 兼容测试（默认）=====
+      response = await fetch(inputUrl, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${inputKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: inputModel,
+          messages: [{ role: "user", content: "ping" }],
+          max_tokens: 1
+        })
+      });
+    }
 
     if (response.ok) {
       statusEl.innerHTML = '√ 已连接';
@@ -949,41 +995,100 @@ async function speak(userPrompt, showThinking = true) {
 
   const config = getApiConfig();
 
-  try {
-    const response = await fetch(config.url, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${config.key}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: config.model,
-        messages: [
-          { role: "system", content: personality + "\n" + context },
-          { role: "user", content: userPrompt }
-        ],
-        temperature: 0.9,
-        max_tokens: 60
-      })
-    });
+try {
+    let response, data, reply;
 
-    if (!response.ok) {
-      const err = await response.text();
-      throw new Error(`HTTP ${response.status}: ${err}`);
+    if (config.provider === 'claude') {
+      // ===== Claude API =====
+      response = await fetch(config.url, {
+        method: "POST",
+        headers: {
+          "x-api-key": config.key,
+          "anthropic-version": "2023-06-01",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: config.model,
+          system: personality + "\n" + context,
+          messages: [{ role: "user", content: userPrompt }],
+          max_tokens: 60,
+          temperature: 0.9
+        })
+      });
+
+      if (!response.ok) throw new Error(`Claude ${response.status}`);
+      data = await response.json();
+      reply = data.content[0].text.trim();
+
+    } else if (config.provider === 'gemini') {
+      // ===== Gemini API =====
+      let modelUrl;
+      if (config.url.includes(':generateContent')) {
+        modelUrl = config.url;  // 用户已填完整 URL
+      } else {
+        // 自动构建：替换模型名到 URL
+        const baseUrl = config.url.replace(/\/v1(\/beta)?\/.*/, '/v1beta/models/');  // 假设用户填 base 如 https://generativelanguage.googleapis.com
+        modelUrl = `${baseUrl}${config.model}:generateContent`;
+      }
+
+      // 如果 URL 没含 ?key=，用 header（推荐）
+      const useHeader = !modelUrl.includes('?key=');
+
+      response = await fetch(modelUrl, {
+        method: "POST",
+        headers: { 
+          ...(useHeader ? { "x-goog-api-key": config.key } : {}),  // 【关键】用 header，不是 Bearer
+          "Content-Type": "application/json" 
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [{ text: fullPrompt }]  // Gemini：单次生成用一个 contents（system + user 合并）
+            }
+          ],
+          generationConfig: {
+            temperature: 0.9,
+            maxOutputTokens: 60  // Gemini 用这个，不是 max_tokens
+          }
+        })
+      });
+
+      if (!response.ok) throw new Error(`Gemini ${response.status}`);
+      data = await response.json();
+      reply = data.candidates[0].content.parts[0].text.trim();  // 【确认】官方解析路径
+
+    } else {
+      // ===== OpenAI 兼容（默认）=====
+      response = await fetch(config.url, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${config.key}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: config.model,
+          messages: [
+            { role: "system", content: personality + "\n" + context },
+            { role: "user", content: userPrompt }
+          ],
+          temperature: 0.9,
+          max_tokens: 60
+        })
+      });
+
+      if (!response.ok) throw new Error(`OpenAI ${response.status}`);
+      data = await response.json();
+      reply = data.choices[0].message.content.trim();
     }
 
-    const data = await response.json();
-    const reply = data.choices[0].message.content.trim();
     thinking.textContent = reply;
 
   } catch (err) {
     thinking.textContent = "网络错误，戳我重试~";
     console.error("API 错误：", err);
-
-    // 连接失败也更新状态
     if (apiStatus) {
       apiStatus.innerHTML = '× 连接失败';
-      apiStatus.style.color = '#f44336';
+      apiStatus.className = 'status-failure';
     }
   }
 }
