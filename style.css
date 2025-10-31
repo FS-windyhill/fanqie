@@ -731,6 +731,26 @@ element.style {
   }
 }
 
+
+/* ---------- 页面底部声明 ---------- */
+.page-footer {
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #888;
+  line-height: 1.4;
+}
+.page-footer a {
+  color: var(--theme-color, #303030);
+  text-decoration: none;
+}
+.page-footer a:hover {
+  text-decoration: underline;
+}
+.page-footer .license {
+  font-size: 0.8rem;
+}
+
 /* ==================== 手机端优化 ==================== */
 @media (max-width: 480px) {
   /* 已有三个面板的优化 */
