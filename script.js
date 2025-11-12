@@ -786,7 +786,7 @@ async function speak(userPrompt, showThinking = true) {
     thinking.textContent = reply;
 
   } catch (err) {
-    thinking.textContent = "网络错误，戳我重试~";
+    thinking.textContent = "网络繁忙，请稍后重试~";
     console.error("API 错误：", err);
     if (apiStatus) { apiStatus.innerHTML = '× 连接失败'; apiStatus.className = 'status-failure'; }
   }
