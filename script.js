@@ -1,9 +1,10 @@
 /* ==================== 全局变量 ==================== */
 const DEFAULT_API = {
   url: "https://api.siliconflow.cn/v1/chat/completions",
-  key: "sk-mvhfuozxnqmthysxdmhmxuxbsrcssgzjxlhtrokckcdcrbop",
-  model: "THUDM/glm-4-9b-chat"
+  key: "sk-fjhacwxbpfotjroebzysefowbzqfgumrgnwuqwamdngdljti",
+  model: "deepseek-ai/DeepSeek-V3.2-Exp"
 };
+/* 备用key：sk-mvhfuozxnqmthysxdmhmxuxbsrcssgzjxlhtrokckcdcrbop */
 
 // DOM 元素
 let avatar, startBtn, resetBtn, timerText, thinking, progressCircle;

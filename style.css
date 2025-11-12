@@ -270,7 +270,7 @@ body {
 .task-input input {
   width: 100%;
   padding: 8px 15px;
-  border: 2px solid #ffe0e0;
+  border: 2px solid #d2d2d2;
   border-radius: 50px;
   font-size: 15px;
   color: #ff6b6b;
@@ -289,6 +289,16 @@ body {
 
 .task-input input::placeholder {
   color: #bbbbbb;
+}
+
+
+circle {
+    stroke: rgb(233, 233, 233);
+    stroke-width: 6;
+    fill: transparent;
+    r: 84;
+    cx: 90;
+    cy: 90;
 }
 
 
