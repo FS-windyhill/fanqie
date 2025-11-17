@@ -368,7 +368,9 @@ function bindEvents() {
       lines.push("历史番茄记录");
       const grouped = {};
       history.forEach(it => { grouped[it.date] = grouped[it.date] || []; grouped[it.date].push(it); });
-      Object.keys(grouped).sort().reverse().forEach(date => {
+      Object.keys(grouped)
+        .sort((a, b) => new Date(b) - new Date(a))  // 重点在这里
+        .forEach(date => {
         lines.push(`\n${date}`);
         grouped[date].forEach(it => lines.push(`${it.task || "无任务"} - ${it.minutes}分钟 - ${it.time || ""}`));
       });
