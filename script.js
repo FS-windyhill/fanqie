@@ -582,7 +582,9 @@ function renderHistory() {
   const grouped = {};
   history.forEach(it => { grouped[it.date] = grouped[it.date] || []; grouped[it.date].push(it); });
   let html = "";
-  Object.keys(grouped).sort().reverse().forEach(date => {
+  Object.keys(grouped)
+    .sort((a, b) => new Date(b.replace(/\//g, '-')) - new Date(a.replace(/\//g, '-')))  // 完美解决 11/9 > 11/10 的问题
+    .forEach(date => {
     html += `<div class="history-date">${date}</div>`;
     grouped[date].forEach(it => {
       html += `<div class="history-item"><strong>${it.task || "无任务"}</strong> - ${it.minutes}分钟 - ${it.time || ""}</div>`;
