@@ -790,7 +790,7 @@ async function speak(userPrompt, showThinking = true) {
     thinking.textContent = reply;
 
   } catch (err) {
-    thinking.textContent = "网络繁忙，请稍后重试~\n（应该是API那边被限制，需要稍等一段时间）";
+    thinking.textContent = "网络繁忙，请稍后重试~\n（应该是API那边被限制，需要稍等一段时间，其他功能可以正常用）";
     console.error("API 错误：", err);
     if (apiStatus) { apiStatus.innerHTML = '× 连接失败'; apiStatus.className = 'status-failure'; }
   }
