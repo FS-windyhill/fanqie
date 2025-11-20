@@ -422,7 +422,7 @@ function saveSettings() {
     inputText = inputText.substring(0, 1500);
     alert("人设已自动截断至 1500 字！");
   }
-  personality = inputText || "你是一个可爱的西红柿学习搭子。";
+  personality = inputText || "-姓名：\n-性别：\n-身份：\n-性格：\n-对用户的称呼：\n-和用户的关系：\n";
   workMinutes = parseInt(workMinutesInput.value, 10) || 25;
 
   localStorage.setItem("tomatoPersonality", personality);
