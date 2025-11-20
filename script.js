@@ -27,13 +27,13 @@ const apiModelInput = document.getElementById('api-model');
 const apiStatus = document.getElementById('api-status');
 
 /* ==================== 状态 ==================== */
-let personality = localStorage.getItem("tomatoPersonality") || "你是一个可爱的西红柿学习搭子。";
+let personality = localStorage.getItem("tomatoPersonality") || "-姓名：\n-性别：\n-身份：\n-性格：\n-对用户的称呼：\n-和用户的关系：\n";
 let currentTask = localStorage.getItem("currentTask") || "";
 let completedTomatoes = parseInt(localStorage.getItem("completedTomatoes") || "0", 10);
 let sessionCount = parseInt(localStorage.getItem("sessionCount") || "0", 10);
 let history = JSON.parse(localStorage.getItem("tomatoHistory") || "[]");
 
-let bgStyle = localStorage.getItem("bgStyle") || "gradient1";
+let bgStyle = localStorage.getItem("bgStyle") || "gradient5";
 let bgImage = localStorage.getItem("bgImage") || "";
 let containerColor = localStorage.getItem("containerColor") || "#ffffff";
 let containerOpacity = localStorage.getItem("containerOpacity") || "100";
