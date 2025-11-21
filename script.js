@@ -519,7 +519,7 @@ function applyAppearance() {
       gradient3: "linear-gradient(to bottom, #a7f3d0, #d9f7be)",
       gradient4: "linear-gradient(to bottom, #ffffff, #ffffff)"
     };
-    body.style.background = gradients[bgStyle] || gradients.gradient1;
+    body.style.background = gradients[bgStyle] || gradients.gradient5;
   }
 
   container.style.backgroundColor = containerColor;
@@ -790,7 +790,7 @@ async function speak(userPrompt, showThinking = true) {
     thinking.textContent = reply;
 
   } catch (err) {
-    thinking.textContent = "网络繁忙，请稍后重试~\n（应该是API那边被限制，需要稍等一段时间，其他功能可以正常用）";
+    thinking.textContent = "网络繁忙，请稍后重试~(应该是API那边被限制了，需要等若干小时。其他功能可以正常使用。)";
     console.error("API 错误：", err);
     if (apiStatus) { apiStatus.innerHTML = '× 连接失败'; apiStatus.className = 'status-failure'; }
   }
