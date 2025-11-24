@@ -64,7 +64,7 @@ body {
 
 .header h1 {
   margin-left: 7px;
-  font-size: 22px;
+  font-size: 20px;
   color: #5e5e5e;
   font-weight: 800;
 }
@@ -83,10 +83,10 @@ body {
 .icon-btn {
   background: #fff;
   border: 2px solid #ddd;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  font-size: 16px;
+  font-size: 15px;
   cursor: pointer;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
