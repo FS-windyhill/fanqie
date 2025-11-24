@@ -47,6 +47,12 @@ let totalTime = workMinutes * 60;
 let isRunning = false;
 let expectedEndTime = null;
 
+// 新增：提示音相关
+let soundEnabled = localStorage.getItem("soundEnabled") === "true"; // 默认关闭
+const notificationSound = new Audio("sounds.wav"); // 预加载音频
+notificationSound.preload = "auto"; // 提前加载，避免第一次延迟
+notificationSound.volume = 0.1;
+
 const CIRCUMFERENCE = 527;
 
 /* ==================== 获取当前 API 配置 ==================== */
@@ -199,6 +205,12 @@ window.onload = function() {
   // 初始化
   taskInput.value = currentTask;
   workMinutesInput.value = workMinutes;
+
+  // 初始化提示音开关状态（等会你会在HTML里加一个checkbox，id叫 sound-toggle）
+  const soundToggle = document.getElementById("sound-toggle");
+  if (soundToggle) {
+    soundToggle.checked = soundEnabled;
+  }
 
   const savedAvatar = localStorage.getItem("customAvatar");
   if (savedAvatar && mainAvatar && avatarPreview) {
@@ -436,6 +448,13 @@ function saveSettings() {
     totalTime = latestMinutes * 60;
     timeLeft = totalTime;
     updateTimer();  // <--- 加上这句，立即刷新界面显示
+  }
+
+  // 保存提示音开关状态
+  const soundToggle = document.getElementById("sound-toggle");
+  if (soundToggle) {
+    soundEnabled = soundToggle.checked;
+    localStorage.setItem("soundEnabled", soundEnabled);
   }
 
   if (isRunning) {
@@ -677,6 +696,15 @@ function startTimer() {
       localStorage.setItem("tomatoHistory", JSON.stringify(history));
 
       speak(`我完成了第 ${completedTomatoes} 个番茄！`, false);
+
+      // 新增：如果开启了提示音，就播放
+      if (soundEnabled) {
+        notificationSound.currentTime = 0; // 从头播放，防止连续点击不响
+        notificationSound.play().catch(e => {
+          console.log("提示音播放失败（可能是浏览器策略）:", e);
+          // 有些浏览器在用户无交互时会阻止播放，这里不弹窗打扰用户
+        });
+      }
 
       // 准备下一个番茄
       const nextMinutes = parseInt(localStorage.getItem("workMinutes") || "25", 10);

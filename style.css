@@ -761,6 +761,15 @@ element.style {
   font-size: 0.8rem;
 }
 
+
+
+input[type="checkbox"] {
+  cursor: pointer;
+}
+
+
+
+
 /* ==================== 手机端优化 ==================== */
 @media (max-width: 480px) {
   /* 已有三个面板的优化 */
