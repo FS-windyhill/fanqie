@@ -165,6 +165,11 @@ window.onload = function() {
     completedTomatoes = parseInt(localStorage.getItem("completedTomatoes") || "0", 10);
   }
 
+  // 先请求通知权限（只会弹一次，用户点“允许”后永久生效）
+  if (Notification.permission === "default") {
+    Notification.requestPermission();
+  }
+
   // 获取 DOM
   avatar = document.getElementById("avatar");
   startBtn = document.getElementById("start-btn");
@@ -697,14 +702,8 @@ function startTimer() {
 
       speak(`我完成了第 ${completedTomatoes} 个番茄！`, false);
 
-      // 新增：如果开启了提示音，就播放
-      if (soundEnabled) {
-        notificationSound.currentTime = 0; // 从头播放，防止连续点击不响
-        notificationSound.play().catch(e => {
-          console.log("提示音播放失败（可能是浏览器策略）:", e);
-          // 有些浏览器在用户无交互时会阻止播放，这里不弹窗打扰用户
-        });
-      }
+      // 超级稳提示（系统通知 + 网页Audio双保险）
+      playNotificationSound();
 
       // 准备下一个番茄
       const nextMinutes = parseInt(localStorage.getItem("workMinutes") || "25", 10);
@@ -734,6 +733,34 @@ function updateTimer() {
 function updateStats() {
   stats.textContent = `今日已完成 ${completedTomatoes} 个番茄`;
 }
+
+
+// 超级稳提示音函数（优先用系统通知铃声 → 再用网页Audio兜底）
+function playNotificationSound() {
+  if (!soundEnabled) return;
+
+  // 方法1：系统通知自带声音（锁屏后台100%响！）
+  if (Notification.permission === "granted") {
+    const n = new Notification("🍅 番茄到啦！", {
+      body: currentTask ? `完成任务：${currentTask}` : "一个番茄完成啦～",
+      icon: "fanqie/icons/icon-192.png",  // 用你的图标
+      silent: false,   // 关键！false = 使用系统默认提示音（一定响）
+      tag: "tomato-done",  // 防止重复通知堆叠
+      renotify: true       // 允许重复通知时也响
+    });
+    // 5秒后自动关闭通知，防止堆积
+    setTimeout(() => n.close(), 5000);
+    return; // 系统铃声成功触发，直接结束
+  }
+
+  // 方法2：兜底用网页Audio（前台时还是会响）
+  if (notificationSound) {
+    notificationSound.currentTime = 0;
+    notificationSound.volume = 0.4;
+    notificationSound.play().catch(() => {});
+  }
+}
+
 
 /* ==================== AI 对话 ==================== */
 async function speak(userPrompt, showThinking = true) {
