@@ -406,6 +406,19 @@ function bindEvents() {
       setTimeout(() => { btn.textContent = original; btn.style.opacity = "1"; }, 1500);
     });
   }
+
+  // 手机端点击无反应终极修复（绝对不发声版）
+  if (/Mobi|Android|iPhone/i.test(navigator.userAgent)) {
+    const unlock = () => {
+      // 故意触发一次“被拒绝的播放”，从而解锁后续音频权限
+      notificationSound.play().catch(() => {});
+      notificationSound.pause();
+      notificationSound.currentTime = 0;
+      document.removeEventListener('touchstart', unlock);
+    };
+    document.addEventListener('touchstart', unlock, { passive: true });
+  }
+  
 }
 
 /* ==================== 面板打开函数 ==================== */
@@ -747,7 +760,7 @@ function playNotificationSound() {
   if (Notification.permission === "granted") {
     const n = new Notification("🍅 一个番茄完成啦！", {
       body: currentTask ? `已完成：${currentTask}` : "一个番茄完成啦～",
-      icon: "/icon-192.png",
+      icon: "/icon192.png",
       tag: "tomato-done",
       renotify: true,
       requireInteraction: false,
