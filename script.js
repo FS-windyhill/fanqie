@@ -741,9 +741,9 @@ function playNotificationSound() {
 
   // 方法1：系统通知自带声音（锁屏后台100%响！）
   if (Notification.permission === "granted") {
-    const n = new Notification("🍅 番茄到啦！", {
+    const n = new Notification("🍅 完成一个番茄啦！", {
       body: currentTask ? `完成任务：${currentTask}` : "一个番茄完成啦～",
-      icon: "fanqie/icons/icon-192.png",  // 用你的图标
+      icon: "/icon-192.png",  // 用你的图标
       silent: false,   // 关键！false = 使用系统默认提示音（一定响）
       tag: "tomato-done",  // 防止重复通知堆叠
       renotify: true       // 允许重复通知时也响
