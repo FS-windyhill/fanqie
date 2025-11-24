@@ -163,35 +163,41 @@ window.onload = function() {
     completedTomatoes = parseInt(localStorage.getItem("completedTomatoes") || "0", 10);
   }
 
-  /* ==========【修改点2：在此处插入】开始 ========== */
+/* ==========【修改点2：在此处插入】开始 ========== */
   
-  // 1. 初始化音频对象（此时页面已加载，不会阻塞）
-  notificationSound = new Audio("sounds.wav");
-  
-  // 2. 移动端音频解锁：用户第一次点击/触摸屏幕时，无声播放一下以获取权限
+  // 2. 移动端音频解锁：用户第一次点击/触摸屏幕时，才创建并加载音频
   const unlockAudio = () => {
-    if (notificationSound) {
-      notificationSound.play().then(() => {
-        notificationSound.pause();
-        notificationSound.currentTime = 0;
-      }).catch((e) => console.log("等待交互解锁音频"));
+    // 只有当 notificationSound 为空时，才去创建它（懒加载）
+    if (!notificationSound) {
+        notificationSound = new Audio("sounds.wav");
     }
+
+    // 尝试播放一瞬间然后暂停，获取 iOS 的音频播放权限
+    notificationSound.play().then(() => {
+      notificationSound.pause();
+      notificationSound.currentTime = 0;
+      console.log("iOS 音频权限已解锁");
+    }).catch((e) => {
+      console.log("等待交互解锁音频或音频文件加载失败", e);
+    });
+    
     // 解锁一次后移除监听，节省性能
     document.removeEventListener('click', unlockAudio);
     document.removeEventListener('touchstart', unlockAudio);
   };
   
-  // 绑定监听器
+  // 绑定监听器，等待用户操作
   document.addEventListener('click', unlockAudio);
   document.addEventListener('touchstart', unlockAudio);
 
-  // 3. (可选) 原来的通知权限请求，如果需要可以保留在这里
+  // 3. (可选) 原来的通知权限请求
   if (Notification.permission === "default") {
     setTimeout(() => {
+        // 为了防止 iOS 弹窗和音频冲突，稍微延时一点
       if (confirm("番茄结束时，是否需要发出提醒？\n如果是，请点击【允许通知】")) {
         Notification.requestPermission();
       }
-    }, 1000);
+    }, 1200);
   }
   
   /* ==========【修改点2】结束 ========== */
@@ -771,7 +777,7 @@ function playNotificationSound() {
     try {
       const n = new Notification("🍅 一个番茄完成啦！", {
         body: currentTask ? `已完成：${currentTask}` : "一个番茄完成啦～",
-        icon: "/icon192.png", // 确保你有这个图标，没有就删掉这行
+        icon: "/icon192.png", 
         tag: "tomato-done",
         renotify: true,
         requireInteraction: false,
@@ -783,13 +789,18 @@ function playNotificationSound() {
     }
   }
 
-  // 【修改点3】网页Audio兜底，关键在于 catch 捕获错误，防止安卓/iOS报错导致程序卡死
+  // 【修改点3】网页Audio兜底
+  // 如果此时 notificationSound 还是 null（极少见），尝试临时创建
+  if (!notificationSound) {
+      notificationSound = new Audio("sounds.wav");
+  }
+
   if (notificationSound) {
     notificationSound.currentTime = 0;
-    notificationSound.volume = 0.6; // 稍微调大一点声音
-    // 重点：加上 .catch(() => {})，这样即使播放失败，代码也会继续运行，不会卡住
+    notificationSound.volume = 0.6; 
+    // 重点：加上 .catch(() => {})，防止报错卡死
     notificationSound.play().catch((err) => {
-      console.log("自动播放被拦截，这在移动端很正常，下次点击页面即可恢复", err);
+      console.log("自动播放被拦截，可能是用户未与页面交互", err);
     });
   }
 }
