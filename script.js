@@ -165,15 +165,6 @@ window.onload = function() {
     completedTomatoes = parseInt(localStorage.getItem("completedTomatoes") || "0", 10);
   }
 
-  // 在 window.onload 开头
-  if (Notification.permission === "default") {
-    setTimeout(() => {
-      if (confirm("番茄结束时，是否需要发出提醒？\n如果是，请点击【允许通知】\n（从设置里【取消对勾】并【保存】即可关闭）")) {
-        Notification.requestPermission();
-      }
-    }, 1000);
-  }
-
   // 获取 DOM
   avatar = document.getElementById("avatar");
   startBtn = document.getElementById("start-btn");
@@ -406,19 +397,6 @@ function bindEvents() {
       setTimeout(() => { btn.textContent = original; btn.style.opacity = "1"; }, 1500);
     });
   }
-
-  // 手机端点击无反应终极修复（绝对不发声版）
-  if (/Mobi|Android|iPhone/i.test(navigator.userAgent)) {
-    const unlock = () => {
-      // 故意触发一次“被拒绝的播放”，从而解锁后续音频权限
-      notificationSound.play().catch(() => {});
-      notificationSound.pause();
-      notificationSound.currentTime = 0;
-      document.removeEventListener('touchstart', unlock);
-    };
-    document.addEventListener('touchstart', unlock, { passive: true });
-  }
-  
 }
 
 /* ==================== 面板打开函数 ==================== */
@@ -719,8 +697,14 @@ function startTimer() {
 
       speak(`我完成了第 ${completedTomatoes} 个番茄！`, false);
 
-      // 超级稳提示（系统通知 + 网页Audio双保险）
-      playNotificationSound();
+      // 新增：如果开启了提示音，就播放
+      if (soundEnabled) {
+        notificationSound.currentTime = 0; // 从头播放，防止连续点击不响
+        notificationSound.play().catch(e => {
+          console.log("提示音播放失败（可能是浏览器策略）:", e);
+          // 有些浏览器在用户无交互时会阻止播放，这里不弹窗打扰用户
+        });
+      }
 
       // 准备下一个番茄
       const nextMinutes = parseInt(localStorage.getItem("workMinutes") || "25", 10);
@@ -750,34 +734,6 @@ function updateTimer() {
 function updateStats() {
   stats.textContent = `今日已完成 ${completedTomatoes} 个番茄`;
 }
-
-
-// 超级稳提示音函数（优先用系统通知铃声 → 再用网页Audio兜底）
-function playNotificationSound() {
-  if (!soundEnabled) return;
-
-  // 终极稳妥版：利用系统通知的“默认提示音”
-  if (Notification.permission === "granted") {
-    const n = new Notification("🍅 一个番茄完成啦！", {
-      body: currentTask ? `已完成：${currentTask}` : "一个番茄完成啦～",
-      icon: "/icon192.png",
-      tag: "tomato-done",
-      renotify: true,
-      requireInteraction: false,
-      silent: false
-    });
-    setTimeout(() => n.close(), 4000);
-    return;
-  }
-
-  // 兜底（前台时还是用你的 sounds.wav）
-  if (notificationSound) {
-    notificationSound.currentTime = 0;
-    notificationSound.volume = 0.4;
-    notificationSound.play().catch(() => {});
-  }
-}
-
 
 /* ==================== AI 对话 ==================== */
 async function speak(userPrompt, showThinking = true) {
