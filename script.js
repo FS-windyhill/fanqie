@@ -165,9 +165,13 @@ window.onload = function() {
     completedTomatoes = parseInt(localStorage.getItem("completedTomatoes") || "0", 10);
   }
 
-  // 先请求通知权限（只会弹一次，用户点“允许”后永久生效）
+  // 在 window.onload 开头
   if (Notification.permission === "default") {
-    Notification.requestPermission();
+    setTimeout(() => {
+      if (confirm("番茄结束时，是否需要发出提醒？\n如果是，请点击【允许通知】\n（从设置里【取消对勾】并【保存】即可关闭）")) {
+        Notification.requestPermission();
+      }
+    }, 1000);
   }
 
   // 获取 DOM
@@ -739,21 +743,21 @@ function updateStats() {
 function playNotificationSound() {
   if (!soundEnabled) return;
 
-  // 方法1：系统通知自带声音（锁屏后台100%响！）
+  // 终极稳妥版：利用系统通知的“默认提示音”
   if (Notification.permission === "granted") {
-    const n = new Notification("🍅 完成一个番茄啦！", {
-      body: currentTask ? `完成任务：${currentTask}` : "一个番茄完成啦～",
-      icon: "/icon-192.png",  // 用你的图标
-      silent: false,   // 关键！false = 使用系统默认提示音（一定响）
-      tag: "tomato-done",  // 防止重复通知堆叠
-      renotify: true       // 允许重复通知时也响
+    const n = new Notification("🍅 一个番茄完成啦！", {
+      body: currentTask ? `已完成：${currentTask}` : "一个番茄完成啦～",
+      icon: "/icon-192.png",
+      tag: "tomato-done",
+      renotify: true,
+      requireInteraction: false,
+      silent: false
     });
-    // 5秒后自动关闭通知，防止堆积
-    setTimeout(() => n.close(), 5000);
-    return; // 系统铃声成功触发，直接结束
+    setTimeout(() => n.close(), 4000);
+    return;
   }
 
-  // 方法2：兜底用网页Audio（前台时还是会响）
+  // 兜底（前台时还是用你的 sounds.wav）
   if (notificationSound) {
     notificationSound.currentTime = 0;
     notificationSound.volume = 0.4;
