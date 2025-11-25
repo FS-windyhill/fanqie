@@ -889,7 +889,7 @@ async function speak(userPrompt, showThinking = true) {
     thinking.textContent = reply;
 
   } catch (err) {
-    thinking.textContent = "网络繁忙，请稍后重试~(应该是API那边被限制了，需要等若干小时。其他功能可以正常使用。)";
+    thinking.textContent = "网络繁忙，请稍后重试~(应该是硅基那边被限制了。\n等若干小时，或者换几次其它API网站，再切回硅基即可。)";
     console.error("API 错误：", err);
     if (apiStatus) { apiStatus.innerHTML = '× 连接失败'; apiStatus.className = 'status-failure'; }
   }
