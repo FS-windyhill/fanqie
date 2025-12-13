@@ -2,7 +2,7 @@
 const DEFAULT_API = {
   url: "https://api.siliconflow.cn/v1/chat/completions",
   key: "sk-fjhacwxbpfotjroebzysefowbzqfgumrgnwuqwamdngdljti",
-  model: "deepseek-ai/DeepSeek-V3.2-Exp"
+  model: "deepseek-ai/DeepSeek-V3.2"
 };
 /* 备用key：sk-mvhfuozxnqmthysxdmhmxuxbsrcssgzjxlhtrokckcdcrbop */
 
