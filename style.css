@@ -1,876 +1,2403 @@
-/**
- * ==============================================
- * Global and Root Styles
- * ==============================================
- */
-
 :root {
-  --theme-color: #ff6b6b;
+    --primary-color: #505050;
+    --background-color: #ffffff;
+    --text-color: #333;
+    --message-bg-user: #d1ffbed8;
+    --message-bg-ai: #ffffffd0;
+    --message-border-user: #b3c5a3;
+    --message-border-ai: #e8e8e8;    
+    --border-radius: 15px;
+    --box-shadow: 0 3px 3px rgba(0,0,0,0.08);
+    --primary-btn-color: rgba(241, 241, 255, 0.99);
+    --primary-btn-text: rgb(116, 118, 255);
+    --btn-color: #f5f5f5;
+    --btn-border-color: #a9a9a9;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* 你原来的 body 样式全部删掉或注释就行 */
+html, body {
+    height: 100dvh;                     /* 2025年最正确的全屏写法 */
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    overscroll-behavior: none;
 }
 
 body {
-  font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
-  background: url('wallpaper.jpg') center/cover no-repeat fixed;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
+    display: flex;
+    flex-direction: column;
+    background: url('wallpaper.jpg') center/cover no-repeat fixed;
+    /* 如果没有wallpaper.jpg，用这个备用色，防止一片白 */
+    background-color: #f2f2f2; 
+}
+
+
+/* --- Header 最终布局样式 --- */
+
+/* 1. 修改 Header 容器，让它成为按钮定位的“锚点” */
+.app-header {
+    position: relative;
+    padding: 12px 24px;
+    border-bottom: 1px solid rgba(220,220,220,0.9);
+    text-align: center;
+    flex-shrink: 0;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
+}
+
+/* 这两部分的样式保持不变，确保文字垂直居中 */
+.app-header h1 {
+    margin: 0;
+    font-size: 1.1em;
+    color: var(--primary-color);
+}
+
+.app-header p {
+    margin: 2px 0 0;
+    font-size: 0.8em;
+    color: #666;
+}
+
+
+#clear-button:hover {
+    background-color: #f5f5f5; /* 鼠标悬停时给一个淡淡的背景色 */
+    border-color: #aaaaaa;     /* 边框颜色也加深一点 */
+}
+
+
+#chat-messages {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.message {
+    padding: 12px 18px;
+    border-radius: var(--border-radius);
+    max-width: 80%;
+    line-height: 1.5;
+    word-wrap: break-word;
+}
+
+.app-footer {
+    flex-shrink: 0;   /* 输入框永远贴底 */
+    /* 你原来的毛玻璃样式也保留 */
+    padding: 8px 16px;
+    border-top: 1px solid rgba(220,220,220,0.9);
+    display: flex;
+    gap: 9px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
+    border-radius: 0;
+}
+
+#task-input {
+    flex-grow: 1;
+    /* 调整内边距，使其文字垂直居中看起来像 input */
+    padding: 6px 16px; 
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.6) !important;
+
+    /* --- 解决问题 1: 去掉右下角下拉标 --- */
+    resize: none; 
+
+    /* --- 解决问题 2: 字体变小 --- */
+    /* textarea 默认不继承父元素字体，需强制继承 */
+    font-family: inherit; 
+    font-size: 1em; 
+    line-height: 1.5; /* 设置行高，让文字不拥挤 */
+
+    /* --- 解决问题 3: 默认高度太高 --- */
+    /* 设置一个初始高度，通常 40px-43px 比较像单行输入框 */
+    height: 38px; 
+    /* 隐藏超出的滚动条，配合 JS 实现自动增高 */
+    overflow-y: hidden; 
+    
+    /* 确保宽度计算包含 padding */
+    box-sizing: border-box; 
+}
+
+#task-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    background: rgba(255, 255, 255, 0.88) !important;
+}
+
+#send-button {
+    padding: 5px 12px;
+    border:1px solid rgba(127, 127, 127, 0.816);
+    background: rgba(251, 251, 251, 0.5);
+    color: rgb(131, 131, 131);
+    border-radius: 8px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#reroll-footer-btn {
+    padding: 5px 12px;
+    border:1px solid rgba(127, 127, 127, 0.816);
+    cursor: pointer;
+    border-radius: 8px;
+    font-size: 1em;
+    flex-shrink: 0;
+    transition: background-color 0.2s;
+    background: rgba(251, 251, 251, 0.5);
+    color: rgb(131, 131, 131);
 }
 
 
 
-/**
- * ==============================================
- * Main Container
- * ==============================================
- */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.hidden {
+    display: none !important;
+}
 
-.container {
-  position: relative;
-  background: white;
-  padding: 36px 32px;
-  border-radius: 32px;
-  box-shadow: 0 0px 8px rgba(0,0,0,0.1);
-  width: 380px;
-  max-width: 90vw;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  backdrop-filter: blur(7px); /* 高斯模糊 */
+/* 格式化AI回复 */
+.message.ai ul {
+    padding-left: 20px;
+    margin-top: 8px;
+    margin-bottom: 0;
+}
+.message.ai li {
+    margin-bottom: 4px;
+}
+
+/* 原有变量保持不变…… */
+
+/* ========= 1. 恢复横向布局（头像和气泡并排） ========= */
+.message-wrapper {
+    display: flex;
+    align-items: flex-start;
+    gap: 3px;                /* 头像和气泡间距 */
+    margin-bottom: 12px;
+    max-width: 93%;
+    opacity: 0;
+    animation: slideInUp 0.35s ease-out 0.05s forwards;
+    /* 新增：让内部可以用 position 定位时间戳 */
+    position: relative;
+}
+
+.message-wrapper.user {
+    flex-direction: row-reverse;
+    align-self: flex-end;     /* 整体右对齐 */
+}
+
+.message-wrapper.ai {
+    align-self: flex-start;   /* 整体左对齐 */
+}
+
+/* 2. 把原来的 .message-content 改成 flex column（本来就该这样） */
+.message-content {
+    flex: 1;                     /* 占满剩余空间 */
+    display: flex;
+    flex-direction: column;      /* 关键！让气泡和时间戳垂直排列 */
+    justify-content: flex-end;   /* 时间戳往下沉 */
 }
 
 
-/**
- * ==============================================
- * Header
- * ==============================================
- */
 
-.header {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
+/* --- 头像样式调整 --- */
+.avatar-container {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0; /* 防止被挤压 */
+    margin: 0 10px; /* 头像左右留白 */
 }
 
-.header h1 {
-  margin-left: 7px;
-  font-size: 20px;
-  color: #5e5e5e;
-  font-weight: 800;
+.avatar-img, .avatar-text {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
 }
 
-/* 我的注释 */
-.settings-panel p {
-  text-align: left;
+
+/* ========= 3. 气泡收紧（文字更密集好看） ========= */
+.message-bubble {
+    padding: 9px 14px;        /* 原来12-18 → 9-14 */
+    border-radius: 12px;
+    max-width: 100%;
+    font-size: 16px;
+    line-height: 1.3;        /* 关键！行距从1.6 → 1.42 超清爽 */
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
-/**
- * ==============================================
- * Buttons
- * ==============================================
- */
-
-.icon-btn {
-  background: #fff;
-  border: 2px solid #ddd;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  font-size: 15px;
-  cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+.message-wrapper.user .message-bubble {
+    background: var(--message-bg-user);
+    border: 0.7px solid var(--message-border-user);
+    border-top-right-radius: 3px;
 }
 
-.icon-btn:hover {
-  background: #f8f8f8;
+.message-wrapper.ai .message-bubble {
+    background: var(--message-bg-ai);
+    border: 1.3px solid var(--message-border-ai);
+    border-top-left-radius: 3px;
 }
 
-.control-group {
-  display: flex;
-  gap: 12px;
-  margin: 5px 0;
-  justify-content: center;
-  align-items: center;
+/* --- 新增：消息气泡入场动画 --- */
+
+/* 
+  定义一个动画，名叫 "slideInUp"
+  它会让元素从下方20像素的位置、完全透明的状态，
+  平滑地移动到原始位置（transform: translateY(0)）并且完全不透明。
+*/
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.control-btn {
-  margin: 12px 0;
-  padding: 12px 36px;
-  font-size: 16px;
-  background: #ff6b6b;
-  color: white;
-  border: none;
-  border-radius: 50px;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(105, 105, 105, 0.3);
-  transition: all 0.3s;
-  font-weight: 500;
+/* 
+  我们给新出现的消息气泡一个特殊的 class，名叫 "newly-added"
+  只要有这个 class，就会播放上面定义的 slideInUp 动画。
+  - 动画时长 0.3秒
+  - 动画曲线是 ease-out，有一种“先快后慢”的缓动感，更自然
+  - forwards 会让动画停留在结束时的状态
+*/
+
+@keyframes slideInUp {
+    to { opacity: 1; transform: translateY(0); }
 }
 
-.control-btn.paused {
-  background: #ffa8a8;
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
 }
 
-.control-btn:hover {
-  background: #ff5252;
-  transform: translateY(-2px);
+/* ======== 2. app-container 现在就是真正的 flex 爸爸 ======== */
+#app-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;                     /* 占满 body 所有剩余空间 */
+    min-height: 0;               /* 关键！允许 chat-window 里的 overflow-y 正常滚动 */
 }
 
-#start-btn {
-  color: #fff !important;
-  font-weight: 600;
-  text-align: center;
+/* ======== 3. 三个孩子的高度行为（原来就写对了，保留）======== */
+#chat-window {
+    flex: 1;                     /* 中间聊天区域吃掉所有剩余空间 */
+    overflow-y: auto;            /* 只有这里能滚动 */
+    min-height: 0;               /* 同样关键！ */
+    padding:15px 5px;
+    display: flex;
+    flex-direction: column;
 }
 
-.reset-btn {
-  background: #cccccc !important;
-  color: white !important;
-  display: none;
+
+/* 正在输入 */
+#typing-status {
+    margin: 4px 0 0;
+    font-size: 0.8em;
+    color: #999;
+    min-height: 1.2em;   /* 防止文字变了布局跳动 */
 }
 
-.reset-btn:hover {
-  background: #bbbbbb !important;
+.typing {
+    font-style: normal !important;
+}
+.typing::after {
+    content: '';
+    animation: ellipsis 1.5s infinite;
+}
+@keyframes ellipsis {
+    0%   { content: ''; }
+    25%  { content: '.'; }
+    50%  { content: '..'; }
+    75%  { content: '...'; }
+    100% { content: ''; }
 }
 
-.reset-btn.show {
-  display: inline-block !important;
+
+/* 重复的 */
+
+
+@keyframes slideInUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-#reset-btn {
-  width: 100px !important;
-  padding: 12px 20px !important;
-  font-size: 16px !important;
-  background: #cccccc !important;
-  color: white !important;
-  display: none;
-  border-radius: 50px !important;
-  border: none !important;
-  cursor: pointer;
+.typing::after {
+    content: '';
+    animation: ellipsis 1.5s infinite;
+}
+@keyframes ellipsis {
+    0%   { content: ''; }
+    25%  { content: '.'; }
+    50%  { content: '..'; }
+    75%  { content: '...'; }
+    100% { content: ''; }
 }
 
-#reset-btn:hover {
-  background: #bbbbbb !important;
+#app-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
 }
 
-#reset-btn.show {
-  display: inline-block !important;
+
+
+
+
+/* ============================================== */
+/* PART 2: 新增样式 (多角色、列表、弹窗) */
+/* ============================================== */
+
+/* 1. 视图切换容器 */
+#view-contact-list, #view-chat {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+}
+.hidden { display: none !important; }
+
+/* 2. Header 里的新按钮 (统一样式) */
+.header-icon-btn {
+    position: absolute;
+    top: 50%;
+    /* 修正垂直居中，考虑padding */
+    transform: translateY(-50%); 
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--primary-btn-color); /* 用你的主题色 */
+    cursor: pointer;
+    padding: 0 10px;
+    height: 100%; /* 增加点击区域 */
+    display: flex;
+    align-items: center;
+}
+
+/* 2. 全新设计的“清空”按钮样式 */
+.header-icon-btn.right {
+    /* --- 定位保持不变 --- */
+    position: absolute;
+    top: 50%;
+    right: 16px;
+    transform: translateY(-50%);
+    
+    /* --- 1. 核心修复：强制盒子模型 --- */
+    box-sizing: border-box; 
+    
+    /* --- 2. 尺寸设定 --- */
+    /* 建议稍微给大丢丢到 26px 或 28px，手指更好点，这里保持你想要的 25px */
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px;
+    min-height: 28px;
+    border-radius: 50%;
+    
+    /* --- 3. 完美的 Flex 居中 (关键！) --- */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;       /* 重点：一定要把 padding 归零！ */
+    
+    /* --- 4. 字体微调 --- */
+    font-size: 16px;  /* 字体必须比盒子小，icon 才会居中且不拥挤 */
+    line-height: 1;   /* 消除文字默认行高，防止垂直偏移 */
+    font-weight: 300; /*稍微细一点点更像现代App */
+    color: #818181;
+    
+    /* --- 外观样式 --- */
+    border: 1px solid #71717181;
+    background: rgba(236, 236, 236, 0.568);
+    
+    /* --- 5. iOS 专用修复 (防止苹果手机加默认按钮样式) --- */
+    -webkit-appearance: none;
+    appearance: none;
+    outline: none;
+}
+
+.header-icon-btn.left {
+    /* --- 定位保持不变 --- */
+    position: absolute;
+    top: 50%;
+    left: 16px;
+    transform: translateY(-50%);
+    
+    /* --- 1. 核心修复：强制盒子模型 --- */
+    box-sizing: border-box; 
+    
+    /* --- 2. 尺寸设定 --- */
+    /* 建议稍微给大丢丢到 26px 或 28px，手指更好点，这里保持你想要的 25px */
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px;
+    min-height: 28px;
+    border-radius: 50%;
+    
+    /* --- 3. 完美的 Flex 居中 (关键！) --- */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;       /* 重点：一定要把 padding 归零！ */
+    
+    /* --- 4. 字体微调 --- */
+    font-size: 16px;  /* 字体必须比盒子小，icon 才会居中且不拥挤 */
+    line-height: 1;   /* 消除文字默认行高，防止垂直偏移 */
+    font-weight: 300; /*稍微细一点点更像现代App */
+    color: #818181;
+    
+    /* --- 外观样式 --- */
+    border: 1px solid #71717181;
+    background: rgba(236, 236, 236, 0.568);
+    
+    /* --- 5. iOS 专用修复 (防止苹果手机加默认按钮样式) --- */
+    -webkit-appearance: none;
+    appearance: none;
+    outline: none;
+}
+
+
+/* 3. 通讯录列表样式 */
+#view-contact-list {
+    display: flex;
+    flex-direction: column;
+    background: transparent;    /* 背景是壁纸，所以透明 */
+}
+
+/* 核心：悬浮的毛玻璃大卡片（固定 85% 大小，自动居中） */
+#contact-list-wrapper {
+    width: 90vw;
+    max-width: 520px;          /* 手机/平板不会太宽 */
+    height: 88vh;
+    max-height: 820px;
+    margin: auto;              /* 上下左右自动居中 */
+    background: rgba(255, 255, 255, 0.72);     /* 亮色壁纸推荐 0.72 */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 15px;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 列表容器：只负责滚动和内边距 */
+#contact-list-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 20px;           /* 左右留白，文字不贴边 */
+    
+    /* 美化滚动条（可选但强烈推荐） */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,0,0,0.2) transparent;
+}
+#contact-list-container::-webkit-scrollbar {
+    width: 6px;
+}
+#contact-list-container::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.25);
+    border-radius: 3px;
+}
+
+/* ======================= 联系人每一项（纯列表风格） ======================= */
+.contact-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 10px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    transition: background 0.2s ease;
+    cursor: pointer;
+}
+
+.contact-item:last-child {
+    border-bottom: none;
+}
+
+/* 按下和高亮反馈 */
+.contact-item:active {
+    background: rgba(0, 0, 0, 0.1) !important;
+}
+
+.contact-item:hover {
+    background: rgba(0, 0, 0, 0.04) !important;
+}
+
+@media (hover: hover) {
+    .contact-item:hover {
+        background: rgba(0, 0, 0, 0.04);
+    }
+}
+
+/* 头像和文字保持原来的好看样式 */
+.contact-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #e0e0e0;
+    margin-right: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    object-fit: cover;
+    flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+}
+
+.contact-info {
+    flex: 1;
+    min-width: 0;                     /* 防止文字溢出 */
+}
+
+.contact-info h3 {
+    margin: 0 0 5px 0;
+    font-size: 16.5px;
+    color: #222;
+    font-weight: 600;
+}
+
+.contact-info p {
+    margin: 0;
+    font-size: 13.5px;
+    color: #777;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+/* 4. 弹窗样式 (继承你的毛玻璃) */
+#modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.4); /* 背景黑一点 */
+    z-index: 10000;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(5px);
+}
+
+
+.modal {
+    width: 85%;
+    max-width: 400px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 24px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    display: flex; flex-direction: column;
+    animation: modalPop 0.3s ease-out;
+}
+
+@keyframes modalPop {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.modal h2 { margin: 0 0 20px 0; color: var(--primary-color); font-size: 18px; text-align: center; }
+
+.input-group { margin-bottom: 15px; }
+.input-group label { display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: bold; margin-right:7px; }
+.input-group input, .input-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 14px;
+    background: #f9f9f9;
+    box-sizing: border-box; /* 关键 */
+}
+.input-group textarea { resize: none; font-family: inherit; }
+
+.modal-buttons {
+    display: flex;
+    justify-content: center;    /* 水平居中 */
+    align-items: center;        /* 如果还需要垂直居中也加上这一行 */
+    gap: 12px;                  /* 如果有多个按钮，控制间距 */
+}
+
+/* 按钮本身的样式保持不变 */
+.modal-buttons button {
+    padding: 9px 50px;
+    gap: 20px;
+    border-radius: 8px;
+    font-size: 15px;
+    border: 0.5px solid #9b9b9b; 
+    cursor: pointer;
+}
+
+#main-cancel { background: var(--btn-color); color: #666; }
+#main-confirm {background: var(--primary-btn-color); color: var(--primary-btn-text); border:0.7px solid var(--primary-btn-text);}
+
+#modal-cancel { background: var(--btn-color); color: #666; }
+#modal-save { background: var(--primary-btn-color); color: var(--primary-btn-text); border: 0.7px solid var(--primary-btn-text);}
+
+.modal-danger-zone {
+    margin-top: 25px;
+    padding-top: 15px;
+    border-top: 1px dashed var(--btn-border-color);
+    display: flex; 
+    flex-direction: column; 
+    gap: 20px;
+}
+.danger-btn {
+    background: #ff3a3a; color: #ffffff; border: 1px solid rgb(255, 0, 0);
+    padding: 5px; border-radius: 8px; font-size: 13px; cursor: pointer; width: 100%;
+}
+.danger-btn.outline {
+    background: rgba(255, 80, 80, 0.1);
+    color: #d32f2f;
+    border: 1px solid rgba(255, 80, 80, 0.9);}
+
+/* ============= 新增样式：头像上传预览 ============= */
+.avatar-upload-group .avatar-preview-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    margin-bottom: 8px;
+}
+
+.avatar-preview {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    background: #f0f0f0;
+    flex-shrink: 0;
+}
+
+.avatar-preview[src^="data:"],
+.avatar-preview:not([src=""]),
+.avatar-preview[src$=".png"],
+.avatar-preview[src$=".jpg"],
+.avatar-preview[src$=".jpeg"],
+.avatar-preview[src$=".webp"] {
+    background: transparent;
+}
+
+/* emoji 头像特殊处理（保持居中） */
+.avatar-preview[alt]:not([src*="http"]):not([src^="data:"]) {
+    font-size: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eee;
 }
 
 .small-btn {
-  padding: 6px 12px;
-  font-size: 13px;
-  background: #f0f0f0;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  cursor: pointer;
+    padding: 10px 62px;
+    font-size: 12px;
+    background: #ffffff;
+    color: rgb(82, 82, 82);
+    border: 1px solid var(--btn-border-color);
+    border-radius: 8px;
+    cursor: pointer;
+}
+/* ============= 全局弹窗蒙版统一样式（重要！两个弹窗都用这个）============= */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.25s ease;
 }
 
-.small-btn:hover {
-  background: #e0e0e0;
+.modal-overlay:not(.hidden) {
+    opacity: 1;
+    visibility: visible;
 }
 
+/* 你原来的编辑角色弹窗还是用这个 id */
+#modal-overlay { z-index: 10000; }
 
-/**
- * ==============================================
- * Avatar and Progress Ring
- * ==============================================
- */
-
-.avatar-wrapper {
-  position: relative;
-  width: 180px;
-  height: 180px;
-  margin: 20px auto;
+/* 新壁纸弹窗直接复用上面的类！ */
+#main-modal {
+    z-index: 10001;   /* 比编辑弹窗高一点，防止被盖住 */
 }
 
-.avatar {
-  width: 140px;
-  height: 140px;
-  border-radius: 50%;
-  object-fit: cover;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 2;
-  cursor: pointer;
-  box-shadow: 0 8px 20px rgba(105, 105, 105, 0.3);
-  transition: transform 0.2s;
+/* ============= 毛玻璃面板（两个弹窗公用）============= */
+.modal.glass-panel {
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 18px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+    width: 90%;
+    max-width: 420px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 24px;
+    box-sizing: border-box;
+    animation: modalPop 0.3s ease;
 }
 
-.avatar:hover {
-  transform: translate(-50%, -50%) scale(1.08);
+@keyframes modalPop {
+    from { transform: scale(0.9); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
 }
 
-.progress-ring {
-  position: absolute;
-  top: 0;
-  left: 0;
-  transform: rotate(-90deg);
+/* ============= 壁纸弹窗专属美化 ============= */
+#main-modal .modal h2 {
+    margin: 5px 0 10px 0;
+    text-align: center;
+    font-size: 20px;
+    color: #333;
 }
 
-.progress-ring__circle,
-.progress-ring__circle-bg {
-  stroke-dasharray: 527;
-  stroke-dashoffset: 0;
+.main-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0px 0 0px;
 }
 
-.progress-ring__circle {
-  transition: stroke-dashoffset 1s linear;
-  stroke-linecap: round;
+.main-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 15px;
+    color: #444;
 }
 
-
-/**
- * ==============================================
- * Timer and Task Elements
- * ==============================================
- */
-
-.digital-timer {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 36px;
-  font-weight: 700;
-  color: var(--theme-color);
-  letter-spacing: 3px;
-  margin: 11px 0;
-  text-shadow: 0 0 10px rgba(105, 105, 105, 0.3);
+.main-option input[type="radio"] {
+    margin: 0;
+    width: 18px;
+    height: 18px;
+    accent-color: #636363;
 }
 
-.thinking {
-  margin-top: 8px;
-  margin-bottom: 5px;
-  font-size: 15px;
-  color: #ff8e8e;
-  min-height: 24px;
-  font-weight: 500;
+.wallpaper-option.upload {
+    border: 1px solid var(--primary-btn-text);
+    justify-content: center;
+    color: var(--primary-btn-text);;
+    font-weight: 500;
+    position: relative;
+    background: var(--primary-btn-color);
+    padding: 10px;
+    border-radius: 10px;
 }
 
-#thinking {
-  min-height: 24px;
-  transition: all 0.3s ease;
+.wallpaper-option.upload:hover {
+    background: rgba(218, 218, 218, 0.9);
+    border-color: #8e8e8e;
 }
 
-.task-input {
-  margin: 16px 0;
-  width: 100%;
-  max-width: 300px;
+/* 隐藏原生文件输入框，但保持可点击 */
+.wallpaper-option.upload input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
 }
 
-.task-input input {
-  width: 100%;
-  padding: 8px 15px;
-  border: 2px solid #d2d2d2;
-  border-radius: 50px;
-  font-size: 15px;
-  color: #ff6b6b;
-  background: #fff8f8;
-  outline: none;
-  text-align: center;
-  transition: all 0.3s;
-  box-shadow: 0 0 0 4px rgba(105, 105, 105, 0.3);
+/* 预览图 */
+#wallpaper-preview {
+    margin: 5px auto;
+    text-align: center;
+    padding: 8px;
+    border-radius: 14px;
+    max-width: 100%;    
 }
 
-.task-input input:focus {
-  border-color: #ff6b6b;
-  background: white;
-  box-shadow: 0 0 0 4px rgba(105, 105, 105, 0.3);
-}
-
-.task-input input::placeholder {
-  color: #bbbbbb;
-}
-
-
-circle {
-    stroke: rgb(233, 233, 233);
-    stroke-width: 6;
-    fill: transparent;
-    r: 84;
-    cx: 90;
-    cy: 90;
-}
-
-
-/**
- * ==============================================
- * Stats
- * ==============================================
- */
-
-.stats {
-  margin-top: 0px;
-  font-size: 14px;
-  color: #ff8e8e;
-  font-weight: 500;
+#wallpaper-preview img {
+    max-width: 100%;
+    max-height: 20vh;
+    border-radius: 12px;
+    box-shadow: 0 8px 8px rgba(0,0,0,0.2);
 }
 
 
-/**
- * ==============================================
- * Settings Panel
- * ==============================================
- */
+/* 导入导出 */
+/* 隐藏原生的文件输入框，但保持可点击 */
+#file { display: none; }
 
-.settings-panel {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 340px;
-  background: white;
-  border: 1px solid #eee;
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.18);
-  display: none;
-  z-index: 100;
+/* 可选：给上传壁纸的卡片加个小图标更好看 */
+
+.main-options .main-option[onclick]::before {
+    font-size: 18px;
+    margin-right: 8px;
+}
+.main-options label[for="file"] span::before,
+.main-options .main-option:has(input[type="file"]) span::before {
+    font-size: 18px;
+    margin-right: 8px;
 }
 
-#appearance-panel {
-  right: 100px;
+/* ========== 设置中心标题美化 ========== */
+.settings-section-title {
+    margin: 28px 0 12px 0;
+    font-size: 17px;
+    color: #555;
+    font-weight: 500;
+    padding-left: 4px;
 }
 
-.settings-panel h3 {
-  margin: 20px 0 9px !important;
-  font-size: 16px;
-  color: #333;
-  font-weight: 600;
+/* ========== API 设置区通用卡片 ========== */
+.api-input-card {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px;
+    padding: 16px 18px !important;
 }
 
-.setting-item {
-  margin: 12px 0;
-  text-align: left;
-  font-size: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.setting-item label {
-  font-weight: 500;
-  color: #555;
-}
-
-.setting-item input[type="url"],
-.setting-item input[type="password"],
-.setting-item input[type="text"] {
-  width: 100%;
-  padding: 8px 10px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 14px;
-  margin-top: 6px;
-}
-
-.setting-row {
-  display: flex;
-  align-items: center;
-  gap:10px;
-  margin-top: 10px;
-  margin-bottom: 16px;
-  font-size: 14px;
-  flex-wrap: nowrap;
-}
-
-.setting-row label {
-  width: 95px;
-  text-align: right;
-  font-weight: 500;
-  flex-shrink: 0;
-}
-
-.setting-row input[type="color"] {
-  width: 40px;
-  height: 40px;
-  padding: 0;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-.setting-row input[type="range"] {
-  flex: 1;
-  min-width: 100px;
-}
-
-element.style {
+.api-label {
+    font-size: 14.5px;
+    color: #555;
+    font-weight: 500;
     width: 80px;
 }
 
-#opacity-value {
-  min-width: 40px;
-  font-size: 13px;
-  color: #666;
-  text-align: center;
-  flex-shrink: 0;
+/* 输入框统一样式 */
+.setting-input {
+    padding: 12px 14px;
+    border: 1.5px solid rgba(0,0,0,0.12);
+    border-radius: 12px;
+    font-size: 15px;
+    background: rgba(255,255,255,0.9);
+    transition: all 0.2s;
 }
 
-#bg-select {
-  padding: 6px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
+.setting-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(95, 95, 95, 0.15);
+    background: white;
 }
 
-#work-minutes {
-  width: 70px;
-  text-align: center;
-  padding: 6px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  font-size: 14px;
+button#save-preset-btn.icon-btn{
+    flex: 1;
+    min-width: 120px;
+    padding: 11px 16px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #ffffff;
+    color: #333;
+    border: 0.7px solid var(--btn-border-color);
+    
 }
 
+button#del-preset-btn.icon-btn.danger{
+    flex: 1;
+    min-width: 120px;
+    padding: 11px 16px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: rgba(255, 80, 80, 0.1);
+    color: #d32f2f;
+    border: 1px solid rgba(255, 80, 80, 0.9);
 
-/**
- * ==============================================
- * Avatar and Cropper
- * ==============================================
- */
-
-#avatar-preview {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
 }
 
-#avatar-preview img {
-  box-shadow: 0 0px 8px rgba(0,0,0,0.1);
-  transition: transform 0.2s;
+.preset-btn-group {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 10px;   /* 上下多留点空间更好看 */
 }
 
-#avatar-preview img:hover {
-  transform: scale(1.1);
-}
+/* ========== 模型选择那一行 ========== */
+/* 5. 模型选择卡片样式 (修正对齐问题) */
 
-#reset-avatar-btn {
-  background: #f8d7da !important;
-  color: #721c24 !important;
-  border: 1px solid #f5c6cb !important;
-  padding: 8px 16px !important;
-  font-size: 14px !important;
-  border-radius: 12px !important;
-  cursor: pointer;
-}
-
-#reset-avatar-btn:hover {
-  background: #f1b0b7 !important;
-}
-
-.cropper-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0,0,0,0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding: 20px;
-}
-
-.cropper-container {
-  background: white;
-  border-radius: 20px;
-  padding: 20px;
-  width: 340px;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-  text-align: center;
-}
-
-.cropper-container h3 {
-  margin-bottom: 16px;
-  color: #333;
-  font-size: 18px;
-}
-
-.cropper-wrapper {
-  position: relative;
-  width: 240px;
-  height: 240px;
-  margin: 0 auto 16px;
-  overflow: hidden;
-  border-radius: 50%;
-  border: 4px solid #fff;
-  box-shadow: 0 0 0 1px #ddd;
-}
-
-#cropper-image {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  cursor: move;
-  transition: none;
-}
-
-.cropper-mask {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  pointer-events: none;
-}
-
-.cropper-circle {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 140px;
-  height: 140px;
-  border: 3px solid var(--theme-color);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
-}
-
-.cropper-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  align-items: center;
-}
-
-#zoom-slider {
-  width: 80%;
-}
-
-.cropper-controls .btn-group {
-  margin-top: 8px;
-}
-
-#reset-avatar {
-  margin-right: 8px;
-  background: #f0f0f0;
-  padding: 6px 12px;
-  font-size: 13px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-#reset-avatar:hover {
-  background: #e0e0e0;
+.main-option.model-card {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 20px 24px;
+    border-radius: 20px;
+    display: flex; /* 确保它是一个flex容器 */
+    flex-direction: column; /* 将主轴改为垂直方向 */
+    align-items: flex-start; /* 新增：让所有子项在水平方向上从左侧开始对齐 */
+    gap: 12px; /* 可以用 gap 来控制子项之间的垂直间距 */
 }
 
 
-/**
- * ==============================================
- * History Panel
- * ==============================================
- */
-
-#history-list {
-  max-height: 300px;
-  overflow-y: auto;
-  text-align: left;
-  font-size: 14px;
-  margin: 10px 0;
-  padding-right: 8px;
+/* “模型”标签的样式 */
+.api-label2 {
+    font-size: 14.5px;
+    color: #555;
+    font-weight: 500;
+    /* width: 80px; 可以保留也可以移除，因为现在对齐了，宽度不再是问题 */
+    /* align-items: flex-start; 这个属性在这里无效，可以删除 */
+    box-sizing: border-box; /* 加上这个是个好习惯 */
+    padding-right: 12px; /* 可以加一点右内边距，让它和下面的输入框左侧对齐得更舒服 */
 }
 
-.history-item {
-  padding: 8px 0;
-  border-bottom: 1px dashed #eee;
-  color: #666;
-}
 
-.history-item:last-child {
-  border-bottom: none;
-}
-
-/* ==================== 人设字数限制样式：开始 ==================== */
-
-.textarea-wrapper {
-  position: relative;
-  margin-bottom: 16px;
-}
-
-#personality {
-  width: 100%;
-  height: 120px;
-  padding: 12px;
-  border: 2px solid #ddd;
-  border-radius: 12px;
-  font-size: 14px;
-  resize: none;
-  box-sizing: border-box;
-  transition: border-color 0.3s;
-}
-
-#personality.warning {
-  border-color: #ff6b6b !important;
-  box-shadow: 0 0 8px rgba(105, 105, 105, 0.3);
-}
-
-.char-count {
-  position: absolute;
-  right: 12px;
-  bottom: 8px;
-  font-size: 12px;
-  color: #888;
-  pointer-events: none;
-  transition: color 0.3s;
-}
-
-.char-count.warning {
-  color: #ff6b6b !important;
-  font-weight: 600;
-}
-
-/* ==================== 历史复制按钮样式 ==================== */
-#copy-history {
-  background: #4CAF50 !important;
-  color: white !important;
-}
-#copy-history:hover {
-  background: #45a049 !important;
-}
-#copy-history:active {
-  transform: scale(0.95);
-}
-
-/* ==================== 历史记录分组样式：开始 ==================== */
-.history-date {
-  font-weight: 600;
-  color: var(--theme-color);
-  margin: 16px 0 8px 0;
-  font-size: 15px;
-  padding-left: 4px;
-  border-left: 3px solid var(--theme-color);
-}
-
-.history-item {
-  margin: 6px 0 6px 16px;
-  font-size: 14px;
-  color: #555;
-}
-
-#copy-today, #copy-all {
-  font-size: 13px;
-  padding: 0px 4px;
-}
-
-/*
-#copy-today {
-  background: #d0d0d0 !important;
-  color: #000000 !important;
-  border: 0.5px solid #2d2d2d !important;
-  padding: 2px 5px !important;
-  font-size: 12px !important;
-  border-radius: 4px !important;
-  cursor: pointer;
-}
-
-#copy-all {
-  background: #000000 !important;
-  color: #ffffff !important;
-  border: 0.5px solid #2d2d2d !important;
-  padding: 2px 5px !important;
-  font-size: 12px !important;
-  border-radius: 4px !important;
-  cursor: pointer;
-}
-*/
-
-.task-input input {
-  background-color: rgba(var(--theme-rgb), 0.1);
-  border: 1.5px solid var(--theme-color);
-  color: var(--theme-color);
-  transition: all 0.3s ease;
-}
-
-/* ==================== API 面板按钮区 ==================== */
-#api-panel .api-panel-footer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  margin-top: 16px;
-}
-
-#api-panel .api-panel-footer .btn-group {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-}
-
-/* 状态文字（统一） */
-#api-panel #api-status {
-  font-size: 0.9em;
-  font-weight: bold;
-  text-align: center;
-  margin: 0;
-  transition: color 0.3s ease;
-}
-
-/* 不同状态用类控制 */
-.status-pending  { color: #ff9800; } /* 连接中… */
-.status-success  { color: #4caf50; } /* √ 已连接 */
-.status-failure  { color: #f44336; } /* × 连接失败 */
-.status-default  { color: #999; }    /* 未测试 */
-
-/* 手机端：按钮垂直 + 居中 */
-@media (max-width: 480px) {
-  #api-panel .api-panel-footer .btn-group {
+/* 下拉框和按钮所在的行 */
+.model-row {
+    display: flex;
     flex-direction: column;
+    gap: 12px;
+    align-items: center; /* 垂直居中对齐下拉框和按钮 */
+    width: 100%; /* 让这一行撑满整个卡片宽度 */
+}
+
+/* 下拉框样式，让它可以伸展 */
+#custom-model-select.model-select {
+    flex-grow: 1; /* 占据 .model-row 里的剩余空间 */
+    /* width: 100%; 在 flex-grow: 1 的情况下，这个可以省略 */
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 14px;
+    background: #f9f9f9;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px 12px;
+}
+
+/* 按钮样式 */
+#fetch-models-btn.fetch-models-btn {
+    padding: 10px 35px;
+    border: 0.7px solid var(--primary-btn-text);
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    background: var(--primary-btn-color);
+    color: var(--primary-btn-text);
+    flex-shrink: 0; /* 防止按钮在空间不足时被压缩 */
+    transition: background-color 0.2s ease;
+}
+
+#fetch-models-btn.fetch-models-btn:hover {
+    background: #b1b1b1;
+}
+
+
+/* =========================================
+   消息列表布局优化
+   ========================================= */
+
+/* --- 时间戳样式 (重点) --- */
+.msg-time {
+    font-size: 11px;
+    color: rgba(255,255,255,0.9);
+    text-shadow: 0 0 2px rgba(0,0,0,0.8), 0 0 4px rgba(0,0,0,0.5);
+    white-space: nowrap;
+    opacity: 0.8;
+    /* 新增：让时间戳紧贴气泡右下角 */
+    align-self: flex-end;        /* 靠右对齐 */
+    margin: 1px 3px;           /* 可选：稍微往左缩一点，不贴边太死 */
+}
+
+
+/* ========== GitHub Gist 云同步模块美化 ========== */
+
+/* 模块标题 */
+.section-title {
+    margin: 30px 0 16px;
+    font-size: 17px;
+    font-weight: 600;
+    color: #333;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+/* 整个卡片容器 */
+.gist-sync-card {
+    background: #fff;
+    border: 1px solid #e1e4e8;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+/* 输入框组 */
+.input-group {
+    margin-bottom: 16px;
+}
+
+.input-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+
+.setting-input {
     width: 100%;
-    align-items: center;     /* 水平居中 */
-    gap: 8px;                /* 可选：按钮间距更清晰 */
-  }
-  #api-panel .api-panel-footer button {
+    padding: 11px 14px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background: #f9f9f9;
+    font-size: 14px;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+.setting-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(112, 112, 112, 0.1);
+}
+
+.input-hint {
+    display: block;
+    margin-top: 6px;
+    font-size: 11.5px;
+    color: #666;
+}
+
+/* Gist ID */
+input#gist-id-input {
+    width: 50%;
+    padding: 11px 14px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background: #f9f9f9;
+    font-size: 14px;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+button#gist-find{
+    background: var(--btn-color);
+    margin-left: 7px;
+    border: 0.7px solid var(--btn-border-color);
+    color: var(--primary-color);
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 0.7px solid var(--btn-border-color);
+}
+
+/* 按钮区域 */
+.gist-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 15px;
+}
+
+.gist-btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 11px 16px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--btn-color);
+    color: #333;
+    border: 0.7px solid var(--btn-border-color);
+}
+
+.gist-btn:hover {
+    background: rgb(231, 231, 231);
+}
+
+/* 主按钮（创建并备份）和你原来的 primary 一致 */
+.gist-btn.primary {
+    background: var(--primary-btn-color);
+    border: 1px solid var(--primary-btn-text) !important;
+    color: var(--primary-btn-text);
+}
+
+.gist-btn.primary:hover {
+    background: rgb(157, 157, 157);
+}
+
+/* 状态提示区 */
+.gist-status {
+    padding-top: 5px;
+    font-size: 13px;
+    color: #555;
+    line-height: 1;
+}
+
+/* 成功/错误状态（可选，你 JS 里可以加 class） */
+.gist-status.success { color: #28a745; }
+.gist-status.error   { color: #dc3545; }
+
+
+/* 两个输入地址的 */
+div#group-gist-id.input-group{
+    display: flex;
+    flex-direction: column;
+}
+
+div#group-custom-url.input-group{
+    display: flex;
+    flex-direction: column;
+}
+
+
+
+/* ==================== 新版设置弹窗整体布局 ==================== */
+.settings-modal {
+    width: 94%;
+    max-width: 960px;           /* PC 上更宽敞 */
+    max-height: 92vh;
+    padding: 20px 16px 24px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.settings-title {
+    text-align: center;
+    font-size: 22px;
+    margin: 0 0 16px 0;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.settings-container {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.6);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+}
+
+/* ==================== 左侧竖排目录（像书签一样）================= */
+.settings-sidebar {
+    width: 50px;                /* 手机上固定宽度 */
+    background: rgba(245,245,245,0.95);
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+    flex-shrink: 0;
+}
+
+.tab-item {
+    writing-mode: vertical-rl;      /* 关键：文字竖排 */
+    text-orientation: mixed;
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    color: #666;
+    position: relative;
+    transition: all 0.3s ease;
+    user-select: none;
+}
+
+/* 选中状态：彩色便签效果 */
+.tab-item.active {
+    background: rgb(255, 255, 255);
+}
+
+/* 悬停也有一点反馈 */
+.tab-item:hover:not(.active) {
+    background: rgba(0,0,0,0.06);
+    color: #333;
+}
+
+.tab-text {
+    letter-spacing: 8px;           /* 竖排时字间距更好看 */
+    padding: 0 8px;
+}
+
+/* ==================== 右侧内容区 ==================== */
+.settings-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 28px;
+    background: rgba(255,255,255,0.8);
+}
+
+/* 每个 tab-pane 默认隐藏 */
+.tab-pane {
+    display: none;
+}
+.tab-pane.active {
+    display: block;
+    animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* 标题稍微调一下间距 */
+.settings-content .section-title {
+    margin: 12px 0 8px 0;
+    font-size: 18px;
+    color: #333;
+    font-weight: 600;
+    padding: 0px 0px 8px 0px;
+}
+
+/* ==================== 手机适配（屏幕小于 640px 时）=================== */
+@media (max-width: 640px) {
+    .settings-container {
+        flex-direction: column;        /* 手机上变成上下布局 */
+    }
+    .settings-sidebar {
+        width: 100%;
+        height: 45px;
+        padding: 0;
+        flex-direction: row;            /* 横向排列三个标签 */
+        border-right: none;
+    }
+    .tab-item {
+        writing-mode: horizontal-tb;    /* 手机恢复横排 */
+        height: auto;
+        width: 33.333%;
+        padding: 0;
+    }
+    .tab-text {
+        letter-spacing: normal;
+    }
+    .settings-content {
+        padding: 0px 18px 20px 18px;
+    }
+}
+
+
+/* ============= 世界书整体容器 ============= */
+/* ============= 世界书整体容器 ============= */
+/* ============= 世界书整体容器 ============= */
+
+
+
+/* ============= 世界书 (World Book) 专属样式 ============= */
+
+/* 布局容器 */
+.wi-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 15px;
+    padding: 5px; /* 给边缘一点呼吸空间 */
+    box-sizing: border-box;
+}
+
+/* 通用玻璃卡片风格 - 继承你的设计语言 */
+.glass-card {
+    background: rgba(255, 255, 255, 0.65); /* 比弹窗稍微透一点，因为在底层 */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 16px;
+    padding: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+    transition: all 0.2s ease;
+}
+
+/* 顶部工具栏 */
+.wi-toolbar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 10px 16px;
+}
+
+.wi-toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wi-toolbar-group.main-select {
+    flex: 1;
+    min-width: 200px;
+}
+
+.wi-toolbar-group label {
+    font-weight: 600;
+    font-size: 14px;
+    color: #444;
+    white-space: nowrap;
+}
+
+.wi-toolbar-divider.vertical {
+    width: 1px;
+    height: 24px;
+    background: rgba(0,0,0,0.1);
+    margin: 0 4px;
+}
+
+/* 主体分栏布局 */
+.wi-main-layout {
+    display: flex;
+    flex: 1;
+    gap: 15px;
+    overflow: hidden; /* 防止溢出 */
+}
+
+/* 左侧列表栏 */
+.wi-sidebar {
+    width: 220px; /*稍微加宽一点更美观*/
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+}
+
+.wi-sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.wi-list-scroll {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-right: 4px; /* 给滚动条留位置 */
+}
+
+/* 列表里的每一项 (JS动态生成的div建议加个class，或者用通用选择器) */
+#wi-list-container > div {
+    padding: 10px 12px;
+    background: rgba(255,255,255,0.5);
+    border: 1px solid transparent;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #333;
+    transition: all 0.2s;
+}
+
+#wi-list-container > div:hover {
+    background: rgba(230, 230, 230, 0.9);
+}
+
+#wi-list-container > div.active {
+    background: var(--primary-btn-color, #e0e0e0); /* 使用你的主色变量 */
+    color: var(--primary-btn-text);
+    font-weight: 600;
+    border-color: rgba(0,0,0,0.1);
+}
+
+/* 右侧编辑区 */
+.wi-editor {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+/* 编辑区内部的小板块 */
+.wi-section-card {
+    background: rgba(0, 0, 0, 0.01);
+    border: 1px solid var(--primary-btn-text);
+    border-radius: 12px;
+    padding: 12px 16px;
+}
+
+.wi-section-title {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    color: #444;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sub-text {
+    font-size: 12px;
+    color: #888;
+    font-weight: normal;
+}
+
+.wi-edit-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.wi-edit-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* 复选框美化 */
+.wi-checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #555;
+    cursor: pointer;
+    user-select: none;
+}
+.wi-checkbox-wrapper input {
+    width: 16px;
+    height: 16px;
+    accent-color: #666;
+    cursor: pointer;
+}
+
+/* 表单组 */
+.wi-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.wi-form-group.flex-grow {
+    flex: 1;
+}
+.wi-form-group label {
+    font-size: 13px;
+    color: #555;
+    font-weight: 500;
+    margin-left: 4px;
+}
+
+/* 输入控件 (继承你的 .setting-input 但做微调) */
+.wi-select {
     width: 100%;
-    max-width: 200px;
-    margin: 0 auto;          /* 保险起见，双重居中 */
-  }
+    cursor: pointer;
+}
+.wi-textarea {
+    flex: 1;
+    min-height: 150px;
+    resize: none;
+    font-family: 'Consolas', 'Monaco', monospace; /* 代码字体 */
+    line-height: 1.5;
+    font-size: 13px;
+}
+
+/* 按钮样式体系 */
+.wi-btn {
+    border: none;
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 1. 主要按钮 (类似你的上传按钮) */
+.wi-btn.primary {
+    background: var(--primary-btn-color);
+    color: var(--primary-btn-text);
+    border: 0.7px solid var(--primary-btn-text);
+}
+.wi-btn.primary:hover {
+    filter: brightness(1.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* 2. 次要按钮 (类似你的保存预设按钮) */
+.wi-btn.secondary {
+    background: var(--btn-color);
+    color: #333;
+    border: 0.7px solid var(--btn-border-color);
+}
+.wi-btn.secondary:hover {
+    background: #f7f7f7;
+    border-color: #999;
+}
+
+/* 3. 危险按钮 */
+.wi-btn.danger {
+    background: rgba(255, 80, 80, 0.1);
+    color: #d32f2f;
+    border: 1px solid rgba(255, 80, 80, 0.9);
 }
 
 
-/* ---------- 页面底部声明 ---------- */
-.page-footer {
-  margin-top: 2rem;
-  text-align: center;
-  font-size: 0.85rem;
-  color: #888;
-  line-height: 1.4;
+/* 4. 纯图标/小按钮 */
+.wi-btn.icon-only {
+    padding: 2px 10px;
+    font-size: 18px;
+    line-height: 1;
+    background: rgba(0,0,0,0.05);
+    color: #555;
 }
-.page-footer a {
-  color: var(--theme-color, #303030);
-  text-decoration: none;
-}
-.page-footer a:hover {
-  text-decoration: underline;
-}
-.page-footer .license {
-  font-size: 0.8rem;
+.wi-btn.icon-only:hover {
+    background: rgba(0,0,0,0.1);
+    color: #000;
 }
 
+/* 底部操作区 */
+.wi-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 5px;
+}
+
+.wi-btn.large {
+    padding: 10px 24px;
+    font-size: 14px;
+}
+
+/* 滚动条美化 (Webkit) */
+.wi-list-scroll::-webkit-scrollbar,
+.wi-editor::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.wi-list-scroll::-webkit-scrollbar-thumb,
+.wi-editor::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.1);
+    border-radius: 3px;
+}
+.wi-list-scroll::-webkit-scrollbar-thumb:hover,
+.wi-editor::-webkit-scrollbar-thumb:hover {
+    background: rgba(0,0,0,0.2);
+}
+
+/* ============= 修复溢出问题 (Fix Overflow) ============= */
+
+/* 1. 强制所有 WI 开头的元素使用这种计算方式：宽度包含了内边距 */
+[class^="wi-"], [id^="wi-"] {
+    box-sizing: border-box; 
+}
+
+/* 2. 针对 .glass-card 也要强制加上，确保万无一失 */
+.glass-card {
+    box-sizing: border-box;
+    max-width: 100%; /* 防止意外撑大 */
+}
 
 
-input[type="checkbox"] {
-  cursor: pointer;
+/* ============= 移动端适配 (Responsive Design) ============= */
+
+@media (max-width: 768px) {
+    
+    /* 1. 外层容器：减少边缘留白，利用每一寸屏幕 */
+    .wi-container {
+        padding: 4px;
+        gap: 8px;
+        height: auto; /* 取消固定高度，允许页面滚动 */
+        overflow-y: auto; /* 确保整体可滚动 */
+    }
+
+    /* 2. 顶部工具栏：从横排变竖排，按钮网格化 */
+    .wi-toolbar {
+        flex-direction: column;
+        align-items: stretch; /* 让子元素占满宽度 */
+        gap: 12px;
+        padding: 14px;
+    }
+
+    .wi-toolbar-group {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    /* 隐藏竖分割线，手机上不需要 */
+    .wi-toolbar-divider {
+        display: none;
+    }
+
+    /* 选择框组：上下排列 */
+    .wi-toolbar-group.main-select {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+    
+    /* 书本操作按钮组：使用网格布局，一行三个，整齐漂亮 */
+    .wi-toolbar-group.actions,
+    .wi-toolbar-group.global-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr; /* 三等分 */
+        gap: 8px;
+    }
+    
+    /* 按钮样式微调：居中文字 */
+    .wi-toolbar button {
+        width: 100%;
+        justify-content: center;
+        padding: 8px 4px; /* 稍微减小内边距防止文字换行 */
+        font-size: 12px;
+    }
+
+    /* 3. 主布局：由左右变上下 */
+    .wi-main-layout {
+        flex-direction: column;
+        overflow: visible; /* 允许内容撑开高度 */
+    }
+
+    /* 4. 左侧列表：变成上方的一个短列表窗 */
+    .wi-sidebar {
+        width: 100%; /* 占满宽度 */
+        height: 220px; /* 固定高度，避免太长占满屏幕 */
+        flex: none; /* 禁止自动伸缩 */
+        border-right: none;
+        border-bottom: 1px solid rgba(255,255,255,0.3);
+    }
+
+    /* 列表项稍微加大，方便手指点击 */
+    #wi-list-container > div {
+        padding: 12px 14px;
+        font-size: 14px;
+    }
+
+    /* 5. 右侧编辑区：在下方铺开 */
+    .wi-editor {
+        width: 100%;
+        flex: none;
+        height: auto; /* 高度随内容自适应 */
+        min-height: 500px; /* 保证有足够编辑空间 */
+        padding: 16px;
+    }
+
+    /* 6. 输入框优化：防止iOS输入时自动放大 */
+    .setting-input, 
+    .wi-textarea,
+    input[type="text"] {
+        font-size: 16px !important; /* iOS小于16px会强制放大页面 */
+    }
+
+    /* 编辑区底部按钮：固定在底部或加大 */
+    .wi-form-actions {
+        display: grid;
+        grid-template-columns: 1fr 2fr; /* 删除键占1份，保存键占2份 */
+        gap: 10px;
+        margin-top: 15px;
+    }
+    
+    .wi-btn.large {
+        width: 100%;
+        padding: 12px 0;
+        font-size: 15px;
+    }
+
+    /* 宽度修正 */
+    .wi-sidebar, 
+    .wi-editor {
+        width: 100% !important; /* 强制占满父容器 */
+        max-width: 100vw;       /* 绝不超过屏幕宽度 */
+        margin-right: 0;
+        margin-left: 0;
+    }
+    
+    /* 修正容器的内边距计算 */
+    .wi-container {
+        width: 100%;
+        overflow-x: hidden; /* 彻底禁止横向滚动条 */
+    }
 }
 
 
 
 
-/* ==================== 手机端优化 ==================== */
-@media (max-width: 480px) {
-  /* 已有三个面板的优化 */
-  #appearance-panel,
-  #settings-panel,
-  #history-panel {
+
+
+
+
+/* ============================================== */
+/* PART 3: 夜间模式 (Dark Mode) */
+/* ============================================== */
+
+/* 1. 变量重写：当 body 有 dark-mode 类时，覆盖原有变量 */
+body.dark-mode {
+    --primary-color: #505050;
+    --background-color: #2b2b2b; /* 增加一个深色底色，防止壁纸加载前刺眼 */
+    
+    /* 将你的 night- 变量映射回标准变量名，这样原来的气泡样式就能自动变色 */
+    --text-color: #ffffff; 
+    --message-bg-user: #d3ff9ed8;
+    --message-bg-ai: #3c3c3cd0;
+    --message-border-user: #88a65d;
+    --message-border-ai: #5b5b5b;
+    
+    --btn-color: #3a3a3a;          /* 按钮深色背景 */
+    --btn-border-color: #555555;   /* 按钮深色边框 */
+    
+    /* 修正字体颜色 */
+    color: #ffffff;
+}
+
+/* 2. 具体的样式覆盖 (Scoped Styles) */
+
+/* 设置弹窗在夜间模式下的背景色 */
+body.dark-mode .modal.glass-panel,
+body.dark-mode #contact-list-wrapper {
+    background: rgba(52, 52, 52, 0.85); /* 深灰色毛玻璃 */
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+body.dark-mode .settings-title,
+body.dark-mode .section-title, 
+body.dark-mode .settings-section-title,
+body.dark-mode h2,
+body.dark-mode h3 {
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .api-label,
+body.dark-mode .input-label,
+body.dark-mode .input-group label {
+    color: #b0b0b0;
+}
+
+/* 输入框在夜间模式的通用样式 */
+body.dark-mode .setting-input,
+body.dark-mode #gist-id-input,
+body.dark-mode textarea {
+    background: #444;
+    border-color: #555;
+    color: #fff;
+}
+
+body.dark-mode .main-option {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ddd;
+}
+
+/* --- 你提供的特定组件样式重写 --- */
+
+/* Header */
+body.dark-mode .app-header {
+    background: rgba(57, 57, 57, 0.8);
+    border-bottom: 1px solid rgba(126, 126, 126, 0.7);
+}
+body.dark-mode .app-header h1 {
+    color: rgba(255, 255, 255, 0.9);
+}
+body.dark-mode .app-header p {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Footer */
+body.dark-mode .app-footer {
+    background: rgba(79, 79, 79, 0.8);
+    border-top: 1px solid rgba(126, 126, 126, 0.7);
+}
+
+/* 输入框区域 */
+body.dark-mode #task-input {
+    border: 1px solid #9d9d9dcc; /* 稍微加深一点 */
+    color: #ffffff;
+    background: rgba(0, 0, 0, 0.25) !important; /* 深色半透明背景 */
+}
+body.dark-mode #task-input:focus {
+    border: 2px solid #9d9d9d;
+    background: rgba(0, 0, 0, 0.25) !important;
+}
+body.dark-mode #task-input::placeholder {
+    color: #bdbdbd;
+}
+
+/* 按钮区域 */
+body.dark-mode #send-button,
+body.dark-mode #reroll-footer-btn {
+    border: 1px solid rgba(182, 182, 182, 0.3);
+    background: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* 顶部左右按钮 */
+body.dark-mode .header-icon-btn.right,
+body.dark-mode .header-icon-btn.left {
+    color: #dedede;
+    border: 1px solid #ffffff50;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* 通讯录列表 */
+body.dark-mode .contact-item {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+body.dark-mode .contact-item:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+body.dark-mode .contact-info h3 {
+    color: #ffffffd8;
+}
+body.dark-mode .contact-info p {
+    color: #cdcdcdc8;
+}
+
+/* ============================================== */
+/* PART 4: 夜间模式补全 (针对你刚提到的元素) */
+/* ============================================== */
+
+/* 1. 模型标签文字颜色变浅 */
+body.dark-mode .api-label2 {
+    color: #b0b0b0;
+}
+
+/* 2. GitHub Gist 卡片背景变深 */
+body.dark-mode .gist-sync-card {
+    background: rgba(255, 255, 255, 0.05); /* 极淡的透明白，显出高级灰 */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: none; /* 去掉阴影，扁平化 */
+}
+
+/* 3. 核心按钮 (Gist主按钮 & 获取模型按钮) 
+   夜间模式下改成半透明磨砂质感，文字变白 */
+body.dark-mode .gist-btn.primary,
+body.dark-mode #fetch-models-btn.fetch-models-btn {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    border: 2px solid var(--primary-btn-text) !important;
+}
+
+/* 鼠标悬停时稍微亮一点 */
+body.dark-mode .gist-btn.primary:hover,
+body.dark-mode #fetch-models-btn.fetch-models-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* 4. 弹窗里的普通输入框和文本域 (补全) */
+body.dark-mode .input-group input, 
+body.dark-mode .input-group textarea {
+    background: rgba(0, 0, 0, 0.25); /* 深色半透明底 */
+    border-color: #555;
+    color: #fff;
+}
+body.dark-mode .input-group input:focus, 
+body.dark-mode .input-group textarea:focus {
+    border-color: #888;
+    background: rgba(0, 0, 0, 0.4);
+}
+
+
+/* ============================================== */
+/* PART 5: 气泡字体颜色独立设置 (重点！) */
+/* ============================================== */
+
+/* 用户气泡：夜间模式下，气泡是亮绿色的，所以文字要用深色 (#232323) */
+body.dark-mode .message-wrapper.user .message-bubble {
+    color: #232323; 
+    /* 如果气泡内有链接，也要强制变黑，防止看不清 */
+}
+body.dark-mode .message-wrapper.user .message-bubble a {
+    color: #0044cc; /* 链接用深蓝色，对比度更高 */
+}
+
+/* AI 气泡：夜间模式下，气泡是深灰色的，所以文字要用白色 */
+body.dark-mode .message-wrapper.ai .message-bubble {
+    color: #ffffff;
+}
+body.dark-mode .message-wrapper.ai .message-bubble a {
+    color: #8ab4f8; /* 链接用浅蓝色 */
+}
+
+/* 顺便修复一下 Markdown 代码块在夜间模式的背景 */
+body.dark-mode pre, 
+body.dark-mode code {
+    background: rgba(0, 0, 0, 0.3);
+    color: #e0e0e0;
+    border-radius: 4px;
+}
+
+
+/* ============================================== */
+/* PART 6: 查找按钮 (Gist Find) 夜间模式适配 */
+/* ============================================== */
+
+body.dark-mode button#gist-find {
+    /* 背景改为半透明白色，透出底下的深色，显得更有质感 */
+    background: rgba(255, 255, 255, 0.15); 
+    
+    /* 文字强制变白，确保清晰可见 */
+    color: #ffffff; 
+    
+    /* 边框稍微亮一点，增加轮廓感 */
+    border: 2px solid var(--primary-btn-text);
+}
+
+/* 鼠标悬停时的效果 */
+body.dark-mode button#gist-find:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+body.dark-mode .gist-btn {
+    flex: 1;
+    min-width: 120px;
+    padding: 11px 16px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s 
+ease;
+    background: var(--btn-color);
+    color: #ffffff;
+    border: 0.7px solid #a9a9a9
+}
+
+
+body.dark-mode button#main-cancel {
+    background: var(--btn-color);
+    color: #ffffff;
+}
+
+body.dark-mode button#main-confirm {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    border: 2px solid var(--primary-btn-text);
+}
+
+body.dark-mode button#modal-save {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    border: 2px solid var(--primary-btn-text);
+}
+
+body.dark-mode button.small-btn {
+    padding: 10px 62px;
+    font-size: 12px;
+    background: var(--btn-color);
+    color: #ffffff;
+    border: 0.7px solid #a9a9a9;
+    cursor: pointer;
+}
+
+body.dark-mode button#modal-cancel {
+    background: var(--btn-color);
+    color: #ffffff;
+}
+
+body.dark-mode .settings-content {
+    flex: 1;
+    overflow-y: auto;
+    background: rgba(50, 50, 50, 0.92);
+}
+
+body.dark-mode .settings-sidebar {
+    width: 50px;
+    background: rgba(31, 31, 31, 0.95);
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+    flex-shrink: 0;
+}
+
+body.dark-mode .tab-item.active {
+    background: #3b3b3b;
+    color: #fefefe;
+}
+
+/* 悬停也有一点反馈 */
+body.dark-mode .tab-item:hover:not(.active) {
+    background: rgba(0,0,0,0.06);
+    color: #fefefe;
+}
+
+
+body.dark-mode .wi-btn.secondary{
+    background: var(--btn-color);
+    color: #ffffff;
+    border: 0.7px solid #a9a9a9;
+}
+
+body.dark-mode .glass-card{
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+}
+
+body.dark-mode .wi-toolbar-group label{
+    color: #ffffff;
+}
+
+body.dark-mode .wi-btn.icon-only{
+    padding: 2px 10px;
+    font-size: 18px;
+    line-height: 1;
+    background: rgba(0, 0, 0, 0.05);
+    color: #ffffff;
+}
+
+body.dark-mode .wi-sidebar-header{
+    color: #ffffff;
+}
+
+body.dark-mode .wi-section-title{
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+body.dark-mode .wi-checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #ffffff;
+    cursor: pointer;
+    user-select: none;
+}
+
+body.dark-mode .wi-form-group label {
+    font-size: 13px;
+    color: #ffffff;
+    font-weight: 500;
+    margin-left: 4px;
+}
+
+body.dark-mode .wi-btn.danger {
+    background: rgba(255, 33, 33, 0.5);
+    color: #ffcaca;
+    border: 1px solid rgba(255, 80, 80, 0.9);
+}
+
+body.dark-mode .wi-btn.primary {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    border: 2px solid var(--primary-btn-text) !important;
+}
+
+/* 删除按钮 */
+body.dark-mode .danger-btn {
+    background: #ff3a3a; color: #ffffff; border: 1px solid rgb(255, 0, 0);
+    padding: 5px; border-radius: 8px; font-size: 13px; cursor: pointer; width: 100%;
+}
+body.dark-mode .danger-btn.outline {
+    background: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    border: 1px solid rgba(255, 80, 80, 0.9);
+}
+
+
+/* ============================================== */
+/* PART 7: 夜间模式下的手机适配（< 640px）      */
+/* ============================================== */
+
+/* 手机端：顶部横向 Tab 样式覆盖 */
+@media (max-width: 640px) {
+    body.dark-mode .settings-container {
+        flex-direction: column;
+    }
+
+    body.dark-mode .settings-sidebar {
+        width: 100%;
+        height: 45px;
+        padding: 0;
+        flex-direction: row;
+        background: rgba(40, 40, 40, 0.95);
+        backdrop-filter: blur(12px);
+    }
+
+    body.dark-mode .tab-item {
+        writing-mode: horizontal-tb;
+        height: auto;
+        width: 33.333%;
+        padding: 16px 0;
+        color: #cccccc;
+        background-color: #222222;
+        font-weight: 500;
+        font-size: 15px;
+        transition: all 0.25s ease;
+    }
+
+    body.dark-mode .tab-item.active {
+        background: #333333 !important;
+        color: #ffffff !important;
+        font-weight: 600;
+    }
+
+    body.dark-mode .tab-item:hover:not(.active) {
+        background: rgba(255, 255, 255, 0.08);
+        color: #ffffff;
+    }
+
+    body.dark-mode .tab-text {
+        letter-spacing: normal;
+    }
+
+    body.dark-mode .settings-content {
+        background: rgba(45, 45, 45, 0.95);
+    }
+
+}
+
+/* =======================弹窗====================================*/
+.message-group {
+    display: flex;
+    flex-direction: column;
+    margin: 4px 0;
+}
+
+.message-bubble {
+    -webkit-user-select: text;     /* 允许复制文字 */
+    user-select: text;
+    /* 长按高亮反馈 */
+    transition: background 0.2s;
+}
+
+.message-bubble:active {
+    background: rgba(0,0,0,0.1) !important;
+}
+
+.selectable-message {
+    cursor: pointer;
+}
+
+.message-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 8px 0;
+}
+
+.message-bubble {
+    user-select: text;
+    -webkit-user-select: text;
+    transition: background 0.2s;
+}
+
+.message-bubble:active {
+    background: rgba(128, 128, 128, 0.2) !important;
+}
+
+#msg-context-menu {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.menu-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 1;
+}
+
+.menu-panel {
+    position: relative;               /* 改成 relative 或者 fixed 都行 */
+    background: var(--bg-color, white);  /* 或者 #fff */
+    border-radius: 12px;
+    padding: 8px 0;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    min-width: 200px;
+    z-index: 2;                       /* 关键：面板在遮罩上面！ */
+    text-align: center;
+}
+
+.menu-panel button {
+    width: 100%;
+    padding: 14px 20px;
+    text-align: center;
+    border: none;
+    background: none;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.menu-panel button:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.menu-panel hr {
+    margin: 8px 0;
+    border: none;
+    border-top: 1px solid #eee;
+}
+
+/* ========== 消息长按上下文菜单整体 ========== */
+.msg-context-menu {
+    position: fixed;
+    inset: 0;
+    display: none;                    /* 默认隐藏 */
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.msg-context-menu.visible {
+    display: flex;
+}
+
+/* 背景遮罩：半透明毛玻璃 */
+.menu-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(8px);       /* 更强的模糊，高端感 */
+}
+
+.msg-context-menu.show {              /* 我们用 .show 类来显示 */
+    display: flex !important;         /* !important 打败可能的 hidden */
+}
+
+/* 菜单面板：增加宽度 + 圆角 + 阴影 */
+.menu-panel {
+    background: var(--panel-bg, #ffffff);   /* 浅色模式默认白 */
+    border-radius: 18px;                    /* 更大圆角，更软萌 */
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+    padding: 10px 0;
+    min-width: 220px;                       /* ★ 宽度从180→220，更宽松舒服 */
+    max-width: 280px;                       /* 防止手机上太宽 */
+    overflow: hidden;
+    animation: menuPop 0.22s ease-out;
+}
+
+/* 按钮文字颜色与样式 */
+.menu-panel button {
+    width: 100%;
+    padding: 14px 24px;                     /* 上下左右间距更大，手感更好 */
+    text-align: left;
+    background: none;
+    border: none;
+    font-size: 16px;                        /* 文字稍大一点 */
+    font-weight: 500;
+    color: var(--text-primary, #333333);    /* 默认文字颜色 */
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.menu-panel button:hover {
+    background: var(--hover-bg, rgba(0, 0, 0, 0.08));
+}
+
+/* 特别强调“删除”按钮：红色警示 */
+.menu-panel button[data-action="delete"] {
+    color: #e74c3c;                          /* 鲜艳红，提醒危险 */
+    font-weight: 600;
+}
+
+.menu-panel button[data-action="delete"]:hover {
+    background: rgba(231, 76, 60, 0.12) !important;
+}
+
+/* 分隔线 */
+.menu-panel hr {
+    margin: 10px 0;
+    border: none;
+    border-top: 1px solid var(--divider, rgba(0, 0, 0, 0.12));
+}
+
+/* 弹出动画 */
+@keyframes menuPop {
+    from {
+        transform: scale(0.88);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.show { display: flex; }
+
+/* ★★★★★ 专杀 backdrop-filter 干扰的菜单 ★★★★★ */
+#msg-context-menu {
+    position: fixed !important;   /* 强制 fixed，摆脱任何父上下文干扰 */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 20000 !important;    /* 比 .modal-overlay 的 10000 高一倍！ */
+    pointer-events: none;         /* 默认不拦截点击 */
+}
+
+#msg-context-menu * {
+    pointer-events: auto;         /* 菜单内容能点 */
+}
+
+.menu-backdrop {
+    background: rgba(0, 0, 0, 0.5) !important;  /* 强加半透明背景，确保看得见 */
+    backdrop-filter: blur(8px);                 /* 你喜欢毛玻璃就加 */
+}
+
+.menu-panel {
+    background: rgba(255, 255, 255, 0.9);       /* 白底半透明 */
+    border-radius: 18px;
+    padding: 16px 0;
+    min-width: 220px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+}
+
+/* ★★★★★ 专治 backdrop-filter / transform 困住 fixed 的灵异菜单 ★★★★★ */
+#msg-context-menu {
     position: fixed !important;
-    left: 50% !important;
-    right: auto !important;
-    transform: translateX(-50%) !important;
-    width: 90% !important;
-    max-width: 320px !important;
-    max-height: 80vh !important;
-    overflow-y: auto !important;
-    top: 10vh !important;
-    padding: 16px !important;
-    box-sizing: border-box !important;
-  }
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 30000 !important;          /* 比 .modal-overlay 的 10000 高三倍！ */
+    isolation: isolate;                 /* ★ 关键！强制创建新 stacking context，逃离父级陷阱 */
+    transform: translateZ(0);           /* ★ 关键！强制 GPU 加速，创建新层，摆脱 backdrop-filter 干扰 */
+    pointer-events: none;               /* 默认不拦截点击 */
+    contain: layout style paint;        /* ★ 额外保险，优化性能并隔离上下文 */
+}
 
-  /* 【新增】API 面板手机端优化 */
-  #api-panel {
-    position: fixed !important;
-    left: 50% !important;
-    right: auto !important;
-    transform: translateX(-50%) !important;
-    width: 90% !important;
-    max-width: 320px !important;
-    max-height: 80vh !important;
-    overflow-y: auto !important;
-    top: 10vh !important;
-    padding: 16px !important;
-    box-sizing: border-box !important;
-  }
+#msg-context-menu * {
+    pointer-events: auto;               /* 菜单内容能点 */
+}
 
-  /* API 面板内部输入框优化 */
-  #api-panel .setting-item input,
-  #api-panel .setting-item textarea {
-    font-size: 14px !important;
-    padding: 6px !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-  }
+/* 强加可见背景（防止透明看不见） */
+.menu-backdrop {
+    background: rgba(0, 0, 0, 0.55) !important;
+    backdrop-filter: blur(12px);
+}
 
-  /* API 面板按钮组：垂直排列，居中 */
-  #api-panel .api-panel-footer {
-    flex-direction: column !important;
-    align-items: center !important;
-    gap: 8px !important;
-    margin-top: 12px !important;
-  }
+/* 美化面板 */
+.menu-panel {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 18px;
+    padding: 12px 0;
+    min-width: 220px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.4);
+    animation: menuPop 0.22s ease-out;
+}
 
-  #api-panel .api-panel-footer button {
-    width: 160px !important;
-    margin: 4px 0 !important;
-  }
+.menu-panel button {
+    padding: 14px 28px;
+    font-size: 16px;
+    text-align: left;
+}
 
-  /* 状态提示文字在手机上也换行不挤 */
-  #api-panel #api-status {
-    margin-left: 0 !important;
-    margin-top: 4px !important;
-    font-size: 0.85em !important;
-  }
-
-  /* 其余你原来的手机优化保持不变 */
-  .control-group {
-    flex-direction: column !important;
-    align-items: center !important;
-  }
-
-  .control-group button {
-    width: 160px !important;
-    margin: 6px 0 !important;
-  }
-
-  .setting-item input,
-  .setting-item select {
-    font-size: 14px !important;
-    padding: 6px !important;
-  }
-
-  body {
-    font-size: 14px !important;
-  }
-
-  .digital-timer {
-    font-size: 2.8rem !important;
-  }
-
-  .avatar-wrapper {
-    width: 140px !important;
-    height: 140px !important;
-  }
-
-  /* 关键：只改容器大小，不动 SVG 内部 */ 
-  .progress-ring {
-    width: 140px !important;
-    height: 140px !important;
-  }
-
-  .avatar {
-    width: 110px !important;
-    height: 110px !important;
-  }
+.menu-panel button[data-action="delete"] {
+    color: #e74c3c;
 }
